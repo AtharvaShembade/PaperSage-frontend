@@ -46,7 +46,7 @@ export async function fetchProject(id: string): Promise<Project> {
 // Add paper to project
 export async function addPaperToProject(
   projectId: string, 
-  paper: { external_paper_id: string; title: string; abstract?: string; year?: number; pdf_url: string }
+  paper: { external_id: string; title: string; abstract?: string; year?: number; pdf_url: string }
 ): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/papers/projects/${projectId}/add-paper`, {
     method: 'POST',
@@ -108,7 +108,7 @@ export async function processPaper(paperId: string): Promise<Paper> {
   await new Promise(resolve => setTimeout(resolve, 1000));
   return {
     id: paperId,
-    external_paper_id: paperId,
+    external_id: paperId,
     title: '',
     abstract: '',
     year: 0,

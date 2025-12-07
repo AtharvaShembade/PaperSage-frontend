@@ -38,11 +38,11 @@ export function PapersTab({ projectId }: PapersTabProps) {
     
     // Transform SearchResult to the expected API format
     await addPaperToProject(projectId, {
-      external_paper_id: result.id,
+      external_id: result.id,
       title: result.title,
       abstract: result.abstract,
       year: result.year,
-      pdf_url: result.openAccessPdf?.url || '',
+      ...(result.openAccessPdf?.url && { pdf_url: result.openAccessPdf.url }),
     });
 
     await loadPapers();
@@ -159,7 +159,7 @@ export function PapersTab({ projectId }: PapersTabProps) {
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-foreground line-clamp-1">{paper.title}</h3>
                     <p className="text-sm text-muted-foreground">
-                      {paper.authors.slice(0, 2).join(', ')} • {paper.year}
+                      {(paper.authors || []).slice(0, 2).join(', ')} • {paper.year}
                     </p>
                     <div className="flex items-center gap-2 mt-2">
                       <span className={`text-xs px-2 py-0.5 rounded-full ${

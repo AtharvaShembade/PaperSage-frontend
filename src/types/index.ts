@@ -15,7 +15,7 @@ export interface Project {
 
 export interface Paper {
   id: number | string;
-  external_paper_id: string;
+  external_id: string;
   title: string;
   abstract?: string;
   year?: number;
