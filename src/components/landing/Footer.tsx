@@ -9,7 +9,7 @@ export function Footer() {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-cyan flex items-center justify-center">
               <Zap className="w-4 h-4 text-primary-foreground" />
             </div>
-            <span className="text-lg font-semibold text-foreground">Research Nexus</span>
+            <span className="text-lg font-semibold text-foreground">PaperSage</span>
           </div>
           
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
@@ -19,7 +19,7 @@ export function Footer() {
           </div>
           
           <p className="text-sm text-muted-foreground">
-            © 2024 Research Nexus. All rights reserved.
+            © 2024 PaperSage. All rights reserved.
           </p>
         </div>
       </div>
