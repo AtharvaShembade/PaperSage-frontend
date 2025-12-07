@@ -10,17 +10,28 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const [isSignUp, setIsSignUp] = useState(false);  // Toggle between login/signup
+  const [error, setError] = useState<string | null>(null);
+  const { login, signUp } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
+    
     try {
-      await login(email, password);
-      navigate('/dashboard');
-    } catch (error) {
-      console.error('Login failed:', error);
+      if (isSignUp) {
+        await signUp(email, password);
+        // Show success message - Supabase may require email confirmation
+        navigate('/dashboard');
+      } else {
+        await login(email, password);
+        navigate('/dashboard');
+      }
+    } catch (err: any) {
+      console.error('Auth failed:', err);
+      setError(err.message || 'Authentication failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -44,8 +55,22 @@ export default function Login() {
             <span className="text-2xl font-bold text-foreground">PaperSage</span>
           </div>
 
-          <h1 className="text-2xl font-semibold text-center mb-2 text-foreground">Welcome back</h1>
-          <p className="text-muted-foreground text-center mb-8">Sign in to your account</p>
+          <h1 className="text-2xl font-semibold text-center mb-2 text-foreground">
+            {isSignUp ? 'Create your account' : 'Welcome back'}
+            </h1>
+          <p className="text-muted-foreground text-center mb-8">
+            {isSignUp ? 'Sign up to get started' : 'Sign in to your account'}
+            </p>
+
+            {error && (
+            <div className={`mb-4 p-3 rounded-lg text-sm ${
+              error.includes('Check your email') 
+                ? 'bg-green-500/20 text-green-400' 
+                : 'bg-red-500/20 text-red-400'
+            }`}>
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -84,18 +109,25 @@ export default function Login() {
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Signing in...
+                  {isSignUp ? 'Creating account...' : 'Signing in...'}
                 </>
               ) : (
-                'Sign In'
+                isSignUp ? 'Sign Up' : 'Sign In'
               )}
             </Button>
           </form>
 
           <p className="text-center text-sm text-muted-foreground mt-6">
-            Don't have an account?{' '}
-            <button className="text-primary hover:underline font-medium">
-              Sign up
+            {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
+            <button 
+              type="button"
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                setError(null);
+              }}
+              className="text-primary hover:underline font-medium"
+            >
+              {isSignUp ? 'Sign in' : 'Sign up'}
             </button>
           </p>
         </div>

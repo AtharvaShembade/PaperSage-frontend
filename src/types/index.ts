@@ -6,24 +6,21 @@ export interface User {
 }
 
 export interface Project {
-  id: string;
+  id: number;  // Backend uses int, not string
   name: string;
-  description: string;
-  papersCount: number;
-  createdAt: string;
-  updatedAt: string;
-  status: 'active' | 'archived';
+  owner_id: number;
+  created_at: string;
+  papers?: Paper[];  // For ProjectDetail response
 }
 
 export interface Paper {
-  id: string;
+  id: number | string;
+  external_paper_id: string;
   title: string;
-  authors: string[];
-  abstract: string;
-  year: number;
-  status: 'searching' | 'processing' | 'ready' | 'error';
-  citations?: number;
-  url?: string;
+  abstract?: string;
+  year?: number;
+  status: 'processing' | 'ready' | 'error';
+  authors?: string[];
 }
 
 export interface SearchResult {
@@ -33,6 +30,7 @@ export interface SearchResult {
   abstract: string;
   year: number;
   citations: number;
+  openAccessPdf?: {url: string};
 }
 
 export interface ChatMessage {
@@ -45,13 +43,11 @@ export interface ChatMessage {
 
 export interface CitationNode {
   id: string;
-  title: string;
-  year: number;
-  type: 'source' | 'cited' | 'citing';
+  label: string;  // Changed from 'title' to match backend
+  year?: number;  // Made optional to match backend
 }
 
 export interface CitationEdge {
-  id: string;
   source: string;
   target: string;
 }
