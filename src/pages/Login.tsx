@@ -41,7 +41,7 @@ export default function Login() {
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-cyan flex items-center justify-center">
               <Zap className="w-6 h-6 text-primary-foreground" />
             </div>
-            <span className="text-2xl font-bold text-foreground">Research Nexus</span>
+            <span className="text-2xl font-bold text-foreground">PaperSage</span>
           </div>
 
           <h1 className="text-2xl font-semibold text-center mb-2 text-foreground">Welcome back</h1>

@@ -30,7 +30,7 @@ export function Hero() {
         </div>
         
         <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight animate-slide-up">
-          <span className="text-gradient">Research Nexus</span>
+          <span className="text-gradient">PaperSage</span>
           <br />
           <span className="text-foreground">Your AI Research</span>
           <br />
