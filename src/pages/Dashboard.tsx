@@ -25,7 +25,7 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
-  const [newProjectDesc, setNewProjectDesc] = useState('');
+  // const [newProjectDesc, setNewProjectDesc] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -36,20 +36,30 @@ export default function Dashboard() {
 
   const loadProjects = async () => {
     setIsLoading(true);
-    const data = await fetchProjects();
-    setProjects(data);
-    setIsLoading(false);
+    try {
+      const data = await fetchProjects();
+      setProjects(data);
+    } catch (error) {
+      console.error('Failed to load projects:', error);
+      // Handle error - show empty state
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCreateProject = async () => {
     if (!newProjectName.trim()) return;
     setIsCreating(true);
-    const newProject = await createProject(newProjectName, newProjectDesc);
-    setProjects(prev => [newProject, ...prev]);
-    setNewProjectName('');
-    setNewProjectDesc('');
-    setIsDialogOpen(false);
-    setIsCreating(false);
+    try {
+      const newProject = await createProject(newProjectName);
+      setProjects(prev => [newProject, ...prev]);
+      setNewProjectName('');
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error('Failed to create project:', error);
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const handleLogout = () => {
@@ -58,8 +68,7 @@ export default function Dashboard() {
   };
 
   const filteredProjects = projects.filter(p => 
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.description.toLowerCase().includes(searchQuery.toLowerCase())
+    p.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -118,7 +127,7 @@ export default function Dashboard() {
                     className="bg-muted border-border"
                   />
                 </div>
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <Label htmlFor="project-desc" className="text-foreground">Description</Label>
                   <Textarea
                     id="project-desc"
@@ -128,7 +137,7 @@ export default function Dashboard() {
                     className="bg-muted border-border resize-none"
                     rows={3}
                   />
-                </div>
+                </div> */}
                 <Button 
                   variant="hero" 
                   className="w-full" 
@@ -189,16 +198,16 @@ export default function Dashboard() {
                   {project.name}
                 </h3>
                 <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                  {project.description}
+                  {project.papers?.length || 0} papers added
                 </p>
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <FileText className="w-3.5 h-3.5" />
-                    {project.papersCount} papers
+                    {project.papers?.length || 0} papers
                   </span>
                   <span className="flex items-center gap-1">
                     <Calendar className="w-3.5 h-3.5" />
-                    {project.updatedAt}
+                    {project.created_at?.split('T')[0] || 'N/A'}
                   </span>
                 </div>
               </button>

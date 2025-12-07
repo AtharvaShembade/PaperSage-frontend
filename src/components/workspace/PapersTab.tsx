@@ -35,13 +35,17 @@ export function PapersTab({ projectId }: PapersTabProps) {
 
   const handleAddPaper = async (result: SearchResult) => {
     setAddingPapers(prev => new Set(prev).add(result.id));
-    const paper = await addPaperToProject(projectId, result);
-    setPapers(prev => [...prev, paper]);
     
-    // Simulate processing
-    processPaper(paper.id).then(processed => {
-      setPapers(prev => prev.map(p => p.id === paper.id ? processed : p));
+    // Transform SearchResult to the expected API format
+    await addPaperToProject(projectId, {
+      external_paper_id: result.id,
+      title: result.title,
+      abstract: result.abstract,
+      year: result.year,
+      pdf_url: result.openAccessPdf?.url || '',
     });
+
+    await loadPapers();
     
     setSearchResults(prev => prev.filter(r => r.id !== result.id));
     setAddingPapers(prev => {
