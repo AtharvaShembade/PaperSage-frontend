@@ -111,6 +111,11 @@ export function PapersTab({ projectId }: PapersTabProps) {
                   <p className="text-sm text-muted-foreground line-clamp-2">{result.abstract}</p>
                   <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
                     <span>{result.citations.toLocaleString()} citations</span>
+                    {/* {result.openAccessPdf?.url && (
+                      <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full">
+                        📄 PDF Available
+                      </span>
+                    )} */}
                   </div>
                 </div>
                 <Button 
@@ -164,12 +169,17 @@ export function PapersTab({ projectId }: PapersTabProps) {
                     <div className="flex items-center gap-2 mt-2">
                       <span className={`text-xs px-2 py-0.5 rounded-full ${
                         paper.status === 'ready' 
-                          ? 'bg-emerald/20 text-emerald' 
+                          ? 'bg-emerald-500/20 text-emerald-400' 
                           : paper.status === 'processing'
-                            ? 'bg-cyan/20 text-cyan'
-                            : 'bg-muted text-muted-foreground'
+                            ? 'bg-cyan-500/20 text-cyan-400'
+                            : paper.status === 'no_pdf'
+                              ? 'bg-amber-500/20 text-amber-400'
+                              : 'bg-red-500/20 text-red-400'
                       }`}>
-                        {paper.status === 'processing' ? 'Processing...' : paper.status}
+                        {paper.status === 'processing' ? 'Processing...' 
+                          : paper.status === 'ready' ? '✓ Ready for RAG'
+                          : paper.status === 'no_pdf' ? 'No PDF (metadata only)'
+                          : 'Error'}
                       </span>
                     </div>
                   </div>

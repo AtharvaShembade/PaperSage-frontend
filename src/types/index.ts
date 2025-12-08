@@ -19,7 +19,7 @@ export interface Paper {
   title: string;
   abstract?: string;
   year?: number;
-  status: 'processing' | 'ready' | 'error';
+  status: 'processing' | 'ready' | 'error' | 'no_pdf';
   authors?: string[];
 }
 
