@@ -28,9 +28,10 @@ export interface SearchResult {
   title: string;
   authors: string[];
   abstract: string;
-  year: number;
-  citations: number;
-  openAccessPdf?: {url: string};
+  year: number | null;
+  citations: number | null;
+  arxiv_id: string;
+  pdf_url: string;
 }
 
 export interface ChatMessage {

@@ -28,31 +28,40 @@ export function PapersTab({ projectId }: PapersTabProps) {
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
     setIsSearching(true);
-    const results = await searchPapers(searchQuery);
-    setSearchResults(results);
-    setIsSearching(false);
+    try {
+      const results = await searchPapers(searchQuery);
+      setSearchResults(results);
+    } catch (error) {
+      console.error('Search failed:', error);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const handleAddPaper = async (result: SearchResult) => {
     setAddingPapers(prev => new Set(prev).add(result.id));
-    
-    // Transform SearchResult to the expected API format
-    await addPaperToProject(projectId, {
-      external_id: result.id,
-      title: result.title,
-      abstract: result.abstract,
-      year: result.year,
-      ...(result.openAccessPdf?.url && { pdf_url: result.openAccessPdf.url }),
-    });
 
-    await loadPapers();
-    
-    setSearchResults(prev => prev.filter(r => r.id !== result.id));
-    setAddingPapers(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(result.id);
-      return newSet;
-    });
+    try {
+      await addPaperToProject(projectId, {
+        external_id: result.id,
+        title: result.title,
+        abstract: result.abstract,
+        year: result.year ?? undefined,
+        pdf_url: result.pdf_url,
+        arxiv_id: result.arxiv_id,
+      });
+
+      await loadPapers();
+      setSearchResults(prev => prev.filter(r => r.id !== result.id));
+    } catch (error) {
+      console.error('Failed to add paper:', error);
+    } finally {
+      setAddingPapers(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(result.id);
+        return newSet;
+      });
+    }
   };
 
   const getStatusIcon = (status: Paper['status']) => {
@@ -110,12 +119,8 @@ export function PapersTab({ projectId }: PapersTabProps) {
                   </p>
                   <p className="text-sm text-muted-foreground line-clamp-2">{result.abstract}</p>
                   <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-                    <span>{result.citations.toLocaleString()} citations</span>
-                    {/* {result.openAccessPdf?.url && (
-                      <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full">
-                        📄 PDF Available
-                      </span>
-                    )} */}
+                    {result.citations != null && <span>{result.citations.toLocaleString()} citations</span>}
+                    <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full">PDF Available</span>
                   </div>
                 </div>
                 <Button 

@@ -45,8 +45,8 @@ export async function fetchProject(id: string): Promise<Project> {
 
 // Add paper to project
 export async function addPaperToProject(
-  projectId: string, 
-  paper: { external_id: string; title: string; abstract?: string; year?: number; pdf_url: string }
+  projectId: string,
+  paper: { external_id: string; title: string; abstract?: string; year?: number; pdf_url?: string; arxiv_id?: string }
 ): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/papers/projects/${projectId}/add-paper`, {
     method: 'POST',
