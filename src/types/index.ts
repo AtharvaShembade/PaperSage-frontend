@@ -53,6 +53,22 @@ export interface CitationEdge {
   target: string;
 }
 
+export interface ComparisonRow {
+  paper_id: number;
+  title: string;
+  year?: number;
+  problem: string;
+  method: string;
+  dataset: string;
+  result: string;
+  limitation: string;
+}
+
+export interface ComparisonResponse {
+  rows: ComparisonRow[];
+  skipped: string[];
+}
+
 export interface AuthState {
   isAuthenticated: boolean;
   user: User | null;

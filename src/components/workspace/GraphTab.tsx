@@ -1,155 +1,190 @@
-import { useState, useEffect, useCallback } from 'react';
-import { fetchCitationGraph } from '@/services/api';
-import { CitationNode, CitationEdge } from '@/types';
-import { Loader2 } from 'lucide-react';
-import {
-  ReactFlow,
-  Node,
-  Edge,
-  Controls,
-  Background,
-  useNodesState,
-  useEdgesState,
-  MarkerType,
-  BackgroundVariant
-} from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
+import { useState, useEffect } from 'react';
+import { fetchComparisonTable } from '@/services/api';
+import { ComparisonRow, ComparisonResponse } from '@/types';
+import { Button } from '@/components/ui/button';
+import { Loader2, TableProperties, AlertCircle } from 'lucide-react';
 
 interface GraphTabProps {
   projectId: string;
 }
 
-const nodeColors = {
-  source: 'hsl(262, 83%, 58%)',
-  cited: 'hsl(190, 95%, 45%)',
-  citing: 'hsl(160, 84%, 39%)'
-};
+const CACHE_KEY = (id: string) => `comparison_${id}`;
+
+interface CachedData {
+  rows: ComparisonRow[];
+  skipped: string[];
+  generatedAt: string;
+}
+
+const COLUMNS: { key: keyof ComparisonRow; label: string }[] = [
+  { key: 'title',      label: 'Paper' },
+  { key: 'problem',    label: 'Problem' },
+  { key: 'method',     label: 'Method' },
+  { key: 'dataset',    label: 'Dataset' },
+  { key: 'result',     label: 'Key Result' },
+  { key: 'limitation', label: 'Limitation' },
+];
+
+function loadFromCache(projectId: string): CachedData | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY(projectId));
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveToCache(projectId: string, data: ComparisonResponse) {
+  const payload: CachedData = {
+    rows: data.rows,
+    skipped: data.skipped,
+    generatedAt: new Date().toISOString(),
+  };
+  localStorage.setItem(CACHE_KEY(projectId), JSON.stringify(payload));
+  return payload;
+}
 
 export function GraphTab({ projectId }: GraphTabProps) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [rows, setRows] = useState<ComparisonRow[]>([]);
+  const [skipped, setSkipped] = useState<string[]>([]);
+  const [generatedAt, setGeneratedAt] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
+  // Load from cache on mount
   useEffect(() => {
-    loadGraph();
+    const cached = loadFromCache(projectId);
+    if (cached) {
+      setRows(cached.rows);
+      setSkipped(cached.skipped);
+      setGeneratedAt(cached.generatedAt);
+      setHasLoaded(true);
+    }
   }, [projectId]);
 
-  const loadGraph = async () => {
+  const loadComparison = async () => {
     setIsLoading(true);
-    const { nodes: citationNodes, edges: citationEdges } = await fetchCitationGraph(projectId);
-    
-    // Convert to React Flow format
-    const flowNodes: Node[] = citationNodes.map((node, index) => ({
-      id: node.id,
-      position: calculatePosition(index, citationNodes.length, node.type),
-      data: { 
-        label: (
-          <div className="text-center">
-            <div className="font-medium text-xs text-foreground line-clamp-2">{node.title}</div>
-            <div className="text-[10px] text-muted-foreground mt-1">{node.year}</div>
-          </div>
-        )
-      },
-      style: {
-        background: `${nodeColors[node.type]}20`,
-        border: `2px solid ${nodeColors[node.type]}`,
-        borderRadius: '12px',
-        padding: '12px',
-        width: 150,
-        fontSize: '12px',
-        color: 'hsl(var(--foreground))'
-      }
-    }));
-
-    const flowEdges: Edge[] = citationEdges.map(edge => ({
-      id: edge.id,
-      source: edge.source,
-      target: edge.target,
-      animated: true,
-      style: { stroke: 'hsl(262, 83%, 58%)', strokeWidth: 2 },
-      markerEnd: {
-        type: MarkerType.ArrowClosed,
-        color: 'hsl(262, 83%, 58%)'
-      }
-    }));
-
-    setNodes(flowNodes);
-    setEdges(flowEdges);
-    setIsLoading(false);
+    setError(null);
+    try {
+      const data = await fetchComparisonTable(projectId);
+      const saved = saveToCache(projectId, data);
+      setRows(saved.rows);
+      setSkipped(saved.skipped);
+      setGeneratedAt(saved.generatedAt);
+      setHasLoaded(true);
+    } catch {
+      setError('Failed to generate comparison. Make sure at least one paper is ready.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const calculatePosition = (index: number, total: number, type: string) => {
-    const centerX = 400;
-    const centerY = 250;
-    
-    if (type === 'source') {
-      return { x: centerX, y: centerY };
-    }
-    
-    if (type === 'cited') {
-      const angle = (Math.PI / 4) + (index * (Math.PI / 6));
-      return {
-        x: centerX - 200 * Math.cos(angle),
-        y: centerY - 150 * Math.sin(angle)
-      };
-    }
-    
-    const angle = -(Math.PI / 4) + (index * (Math.PI / 6));
-    return {
-      x: centerX + 200 * Math.cos(angle),
-      y: centerY + 150 * Math.sin(angle)
-    };
-  };
-
-  if (isLoading) {
-    return (
-      <div className="glass rounded-xl h-[600px] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  const formattedDate = generatedAt
+    ? new Date(generatedAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+    : null;
 
   return (
     <div className="glass rounded-xl overflow-hidden">
+      {/* Header */}
       <div className="p-4 border-b border-border flex items-center justify-between">
         <div>
-          <h2 className="font-semibold text-foreground">Citation Network</h2>
-          <p className="text-sm text-muted-foreground">Explore relationships between papers</p>
+          <h2 className="font-semibold text-foreground">Paper Comparison</h2>
+          <p className="text-sm text-muted-foreground">
+            {formattedDate ? `Last generated: ${formattedDate}` : 'Side-by-side breakdown of all ready papers'}
+          </p>
         </div>
-        <div className="flex items-center gap-4 text-sm">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: nodeColors.source }} />
-            <span className="text-muted-foreground">Source</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: nodeColors.cited }} />
-            <span className="text-muted-foreground">Cited</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: nodeColors.citing }} />
-            <span className="text-muted-foreground">Citing</span>
-          </div>
-        </div>
+        <Button onClick={loadComparison} disabled={isLoading}>
+          {isLoading
+            ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Generating...</>
+            : <><TableProperties className="w-4 h-4 mr-2" />{hasLoaded ? 'Regenerate' : 'Generate Table'}</>
+          }
+        </Button>
       </div>
-      
-      <div className="h-[550px]">
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          fitView
-          attributionPosition="bottom-left"
-        >
-          <Controls className="bg-card border border-border rounded-lg" />
-          <Background 
-            variant={BackgroundVariant.Dots} 
-            gap={20} 
-            size={1}
-            color="hsl(var(--muted-foreground))"
-            style={{ opacity: 0.3 }}
-          />
-        </ReactFlow>
+
+      {/* Body */}
+      <div className="p-4">
+        {/* Initial empty state */}
+        {!hasLoaded && !isLoading && !error && (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <TableProperties className="w-12 h-12 text-muted-foreground mb-4" />
+            <p className="text-muted-foreground mb-1">No comparison generated yet</p>
+            <p className="text-sm text-muted-foreground">Click "Generate Table" to compare all ready papers</p>
+          </div>
+        )}
+
+        {/* Loading */}
+        {isLoading && (
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">Generating table...</p>
+          </div>
+        )}
+
+        {/* Error */}
+        {error && (
+          <div className="flex items-center gap-3 p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400">
+            <AlertCircle className="w-5 h-5 shrink-0" />
+            <p className="text-sm">{error}</p>
+          </div>
+        )}
+
+        {/* Skipped papers notice */}
+        {hasLoaded && skipped.length > 0 && (
+          <div className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm">
+            Skipped {skipped.length} paper{skipped.length > 1 ? 's' : ''} (not yet ready): {skipped.join(', ')}
+          </div>
+        )}
+
+        {/* Table */}
+        {hasLoaded && rows.length > 0 && !isLoading && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr>
+                  {COLUMNS.map(col => (
+                    <th
+                      key={col.key}
+                      className="text-left px-3 py-2 text-muted-foreground font-medium border-b border-border whitespace-nowrap"
+                    >
+                      {col.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row, i) => (
+                  <tr key={row.paper_id} className={i % 2 === 0 ? 'bg-muted/20' : ''}>
+                    {COLUMNS.map(col => (
+                      <td
+                        key={col.key}
+                        className="px-3 py-3 align-top border-b border-border/50 max-w-[220px]"
+                      >
+                        {col.key === 'title' ? (
+                          <div>
+                            <p className="font-medium text-foreground line-clamp-2">{row.title}</p>
+                            {row.year && <p className="text-xs text-muted-foreground mt-0.5">{row.year}</p>}
+                          </div>
+                        ) : (
+                          <p className="text-muted-foreground leading-relaxed">{row[col.key] as string}</p>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* No ready papers */}
+        {hasLoaded && rows.length === 0 && !isLoading && (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <AlertCircle className="w-10 h-10 text-muted-foreground mb-3" />
+            <p className="text-muted-foreground">No ready papers to compare.</p>
+            <p className="text-sm text-muted-foreground mt-1">Add papers and wait for them to finish processing.</p>
+          </div>
+        )}
       </div>
     </div>
   );

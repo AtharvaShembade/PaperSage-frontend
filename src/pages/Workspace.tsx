@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PapersTab } from '@/components/workspace/PapersTab';
 import { ChatTab } from '@/components/workspace/ChatTab';
 import { GraphTab } from '@/components/workspace/GraphTab';
-import { ArrowLeft, Search, MessageSquare, GitBranch, Loader2 } from 'lucide-react';
+import { ArrowLeft, Search, MessageSquare, TableProperties, Loader2 } from 'lucide-react';
 
 export default function Workspace() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -89,12 +89,12 @@ export default function Workspace() {
               <MessageSquare className="w-4 h-4" />
               RAG Chat
             </TabsTrigger>
-            <TabsTrigger 
-              value="graph" 
+            <TabsTrigger
+              value="graph"
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
             >
-              <GitBranch className="w-4 h-4" />
-              Citation Graph
+              <TableProperties className="w-4 h-4" />
+              Compare Papers
             </TabsTrigger>
           </TabsList>
 

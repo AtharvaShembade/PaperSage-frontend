@@ -1,4 +1,4 @@
-import { Project, Paper, SearchResult, ChatMessage, CitationNode, CitationEdge } from '@/types';
+import { Project, Paper, SearchResult, ChatMessage, CitationNode, CitationEdge, ComparisonResponse } from '@/types';
 import { supabase } from '@/lib/supabase';
 
 const API_BASE_URL = 'http://localhost:8000/api/v1';
@@ -99,6 +99,15 @@ export async function fetchCitationGraph(projectId: string): Promise<{ nodes: Ci
     headers: await getAuthHeaders(),
   });
   if (!response.ok) throw new Error('Failed to fetch citation graph');
+  return response.json();
+}
+
+// Fetch comparison table for a project
+export async function fetchComparisonTable(projectId: string): Promise<ComparisonResponse> {
+  const response = await fetch(`${API_BASE_URL}/analysis/projects/${projectId}/comparison`, {
+    headers: await getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error('Failed to fetch comparison table');
   return response.json();
 }
 
