@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PapersTab } from '@/components/workspace/PapersTab';
 import { ChatTab } from '@/components/workspace/ChatTab';
 import { GraphTab } from '@/components/workspace/GraphTab';
-import { Zap, ArrowLeft, Search, MessageSquare, GitBranch, Loader2 } from 'lucide-react';
+import { ArrowLeft, Search, MessageSquare, GitBranch, Loader2 } from 'lucide-react';
 
 export default function Workspace() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -62,12 +62,10 @@ export default function Workspace() {
           </Button>
           
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-cyan flex items-center justify-center">
-              <Zap className="w-5 h-5 text-primary-foreground" />
-            </div>
+            <img src="/dark-owl.png" alt="PaperSage" className="w-10 h-10 rounded-lg object-cover" />
             <div>
               <h1 className="text-lg font-semibold text-foreground">{project.name}</h1>
-              <p className="text-sm text-muted-foreground">{project.papersCount} papers</p>
+              <p className="text-sm text-muted-foreground">{project.papers?.length ?? 0} papers</p>
             </div>
           </div>
         </div>

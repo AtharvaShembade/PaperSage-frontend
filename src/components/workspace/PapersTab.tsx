@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Paper, SearchResult } from '@/types';
-import { searchPapers, fetchProjectPapers, addPaperToProject, processPaper } from '@/services/api';
-import { Search, Plus, FileText, Loader2, CheckCircle, Clock, ExternalLink } from 'lucide-react';
+import { searchPapers, fetchProjectPapers, addPaperToProject, processPaper, removePaperFromProject } from '@/services/api';
+import { Search, Plus, FileText, Loader2, CheckCircle, Clock, ExternalLink, Trash2 } from 'lucide-react';
 
 interface PapersTabProps {
   projectId: string;
@@ -15,6 +15,7 @@ export function PapersTab({ projectId }: PapersTabProps) {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [papers, setPapers] = useState<Paper[]>([]);
   const [addingPapers, setAddingPapers] = useState<Set<string>>(new Set());
+  const [removingPapers, setRemovingPapers] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadPapers();
@@ -61,6 +62,18 @@ export function PapersTab({ projectId }: PapersTabProps) {
         newSet.delete(result.id);
         return newSet;
       });
+    }
+  };
+
+  const handleRemovePaper = async (paperId: string) => {
+    setRemovingPapers(prev => new Set(prev).add(paperId));
+    try {
+      await removePaperFromProject(projectId, paperId);
+      setPapers(prev => prev.filter(p => String(p.id) !== paperId));
+    } catch (error) {
+      console.error('Failed to remove paper:', error);
+    } finally {
+      setRemovingPapers(prev => { const s = new Set(prev); s.delete(paperId); return s; });
     }
   };
 
@@ -173,21 +186,33 @@ export function PapersTab({ projectId }: PapersTabProps) {
                     </p>
                     <div className="flex items-center gap-2 mt-2">
                       <span className={`text-xs px-2 py-0.5 rounded-full ${
-                        paper.status === 'ready' 
-                          ? 'bg-emerald-500/20 text-emerald-400' 
+                        paper.status === 'ready'
+                          ? 'bg-emerald-500/20 text-emerald-400'
                           : paper.status === 'processing'
                             ? 'bg-cyan-500/20 text-cyan-400'
                             : paper.status === 'no_pdf'
                               ? 'bg-amber-500/20 text-amber-400'
                               : 'bg-red-500/20 text-red-400'
                       }`}>
-                        {paper.status === 'processing' ? 'Processing...' 
+                        {paper.status === 'processing' ? 'Processing...'
                           : paper.status === 'ready' ? '✓ Ready for RAG'
                           : paper.status === 'no_pdf' ? 'No PDF (metadata only)'
                           : 'Error'}
                       </span>
                     </div>
                   </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handleRemovePaper(String(paper.id))}
+                    disabled={removingPapers.has(String(paper.id))}
+                    className="shrink-0 text-muted-foreground hover:text-red-400"
+                  >
+                    {removingPapers.has(String(paper.id))
+                      ? <Loader2 className="w-4 h-4 animate-spin" />
+                      : <Trash2 className="w-4 h-4" />
+                    }
+                  </Button>
                 </div>
               </div>
             ))

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
-import { Zap, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -49,9 +49,7 @@ export default function Login() {
         <div className="glass-strong rounded-2xl p-8 glow-border">
           {/* Logo */}
           <div className="flex items-center justify-center gap-3 mb-8">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-cyan flex items-center justify-center">
-              <Zap className="w-6 h-6 text-primary-foreground" />
-            </div>
+            <img src="/dark-owl.png" alt="PaperSage" className="w-12 h-12 rounded-xl object-cover" />
             <span className="text-2xl font-bold text-foreground">PaperSage</span>
           </div>
 

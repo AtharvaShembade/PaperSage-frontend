@@ -1,4 +1,3 @@
-import { Zap } from 'lucide-react';
 
 export function Footer() {
   return (
@@ -6,9 +5,7 @@ export function Footer() {
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-cyan flex items-center justify-center">
-              <Zap className="w-4 h-4 text-primary-foreground" />
-            </div>
+            <img src="/dark-owl.png" alt="PaperSage" className="w-8 h-8 rounded-lg object-cover" />
             <span className="text-lg font-semibold text-foreground">PaperSage</span>
           </div>
           

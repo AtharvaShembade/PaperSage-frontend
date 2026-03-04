@@ -102,6 +102,15 @@ export async function fetchCitationGraph(projectId: string): Promise<{ nodes: Ci
   return response.json();
 }
 
+// Remove paper from project
+export async function removePaperFromProject(projectId: string, paperId: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/papers/projects/${projectId}/papers/${paperId}`, {
+    method: 'DELETE',
+    headers: await getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error('Failed to remove paper');
+}
+
 // Process paper (papers auto-process on add, this is a polling stub)
 export async function processPaper(paperId: string): Promise<Paper> {
   // Papers are processed automatically in the background when added
