@@ -72,7 +72,7 @@ export async function sendChatMessage(projectId: string, message: string): Promi
     headers: await getAuthHeaders(),
     body: JSON.stringify({ project_id: parseInt(projectId), query: message }),
   });
-  if (!response.ok) throw new Error('Failed to send message');
+  if (!response.ok) throw Object.assign(new Error('Failed to send message'), { status: response.status });
   const data = await response.json();
   
   return {

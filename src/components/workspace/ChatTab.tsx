@@ -87,8 +87,23 @@ export function ChatTab({ projectId }: ChatTabProps) {
     try {
       const response = await sendChatMessage(projectId, input);
       setMessages(prev => [...prev, response]);
-    } catch (error) {
-      console.error('Failed to send message:', error);
+    } catch (error: any) {
+      const status = error?.status;
+      const text =
+        !status
+          ? "Couldn't reach the server. Check your connection and try again."
+          : status === 401
+          ? "Your session has expired. Please refresh the page."
+          : status === 404
+          ? "This project could not be found."
+          : "Something went wrong on our end. Try again in a moment.";
+
+      setMessages(prev => [...prev, {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: text,
+        timestamp: new Date().toISOString(),
+      }]);
     } finally {
       setIsLoading(false);
     }
