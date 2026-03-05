@@ -31,22 +31,15 @@ export function Hero() {
           No more skimming 40-page PDFs.
         </p>
         
-        <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up" style={{ animationDelay: '0.2s' }}>
-          <Button 
-            variant="hero" 
-            size="xl" 
+        <div className="flex justify-center animate-slide-up" style={{ animationDelay: '0.2s' }}>
+          <Button
+            variant="hero"
+            size="xl"
             onClick={() => navigate('/login')}
             className="group"
           >
             Get Started
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </Button>
-          <Button 
-            variant="glass" 
-            size="xl"
-            onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
-          >
-            Learn More
           </Button>
         </div>
 

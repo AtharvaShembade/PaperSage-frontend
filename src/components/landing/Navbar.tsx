@@ -12,18 +12,10 @@ export function Navbar() {
           <span className="text-xl font-bold text-foreground">PaperSage</span>
         </div>
 
-        <div className="hidden md:flex items-center gap-8">
-          <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">Features</a>
-          <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
-          <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">About</a>
-        </div>
 
         <div className="flex items-center gap-4">
           <Button variant="ghost" onClick={() => navigate('/login')}>
             Sign In
-          </Button>
-          <Button variant="hero" onClick={() => navigate('/login')}>
-            Get Started
           </Button>
         </div>
       </div>
