@@ -34,12 +34,17 @@ export interface SearchResult {
   pdf_url: string;
 }
 
+export interface ChatSource {
+  title: string;
+  chunk: string;
+}
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: string;
-  sources?: string[];
+  sources?: ChatSource[];
 }
 
 export interface CitationNode {

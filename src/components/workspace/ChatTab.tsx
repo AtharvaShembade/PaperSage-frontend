@@ -1,12 +1,41 @@
 import { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ChatMessage } from '@/types';
+import { ChatMessage, ChatSource } from '@/types';
 import { sendChatMessage } from '@/services/api';
-import { Send, Bot, User, Loader2, Sparkles } from 'lucide-react';
+import { Send, Bot, User, Loader2, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface ChatTabProps {
   projectId: string;
+}
+
+function SourceList({ sources }: { sources: ChatSource[] }) {
+  const [expanded, setExpanded] = useState<number | null>(null);
+
+  return (
+    <div className="mt-3 pt-3 border-t border-border/50 space-y-1">
+      <p className="text-xs text-muted-foreground mb-2">Sources:</p>
+      {sources.map((source, i) => (
+        <div key={i} className="rounded-lg overflow-hidden border border-border/40">
+          <button
+            onClick={() => setExpanded(expanded === i ? null : i)}
+            className="w-full flex items-center justify-between px-3 py-1.5 bg-primary/10 hover:bg-primary/20 transition-colors text-left"
+          >
+            <span className="text-xs text-primary font-medium line-clamp-1">{source.title}</span>
+            {expanded === i
+              ? <ChevronUp className="w-3 h-3 text-primary shrink-0 ml-2" />
+              : <ChevronDown className="w-3 h-3 text-primary shrink-0 ml-2" />
+            }
+          </button>
+          {expanded === i && (
+            <p className="text-xs text-muted-foreground px-3 py-2 leading-relaxed bg-muted/30">
+              {source.chunk}
+            </p>
+          )}
+        </div>
+      ))}
+    </div>
+  );
 }
 
 const STORAGE_KEY = (projectId: string) => `chat_history_${projectId}`;
@@ -116,19 +145,7 @@ export function ChatTab({ projectId }: ChatTabProps) {
               </p>
               
               {message.sources && message.sources.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-border/50">
-                  <p className="text-xs text-muted-foreground mb-1">Sources:</p>
-                  <div className="flex flex-wrap gap-1">
-                    {message.sources.map((source, i) => (
-                      <span 
-                        key={i}
-                        className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary"
-                      >
-                        {source}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+                <SourceList sources={message.sources} />
               )}
             </div>
             

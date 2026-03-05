@@ -1,4 +1,4 @@
-import { Project, Paper, SearchResult, ChatMessage, CitationNode, CitationEdge, ComparisonResponse } from '@/types';
+import { Project, Paper, SearchResult, ChatMessage, ChatSource, CitationNode, CitationEdge, ComparisonResponse } from '@/types';
 import { supabase } from '@/lib/supabase';
 
 const API_BASE_URL = 'http://localhost:8000/api/v1';
@@ -80,6 +80,7 @@ export async function sendChatMessage(projectId: string, message: string): Promi
     role: 'assistant',
     content: data.answer,
     timestamp: new Date().toISOString(),
+    sources: data.sources ?? [],
   };
 }
 
