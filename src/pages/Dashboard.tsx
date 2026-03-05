@@ -184,7 +184,7 @@ export default function Dashboard() {
               <button
                 key={project.id}
                 onClick={() => navigate(`/workspace/${project.id}`)}
-                className="glass rounded-xl p-6 text-left hover:border-primary/50 transition-all duration-300 hover:scale-[1.02] group animate-fade-in"
+                className="glass rounded-xl p-6 text-left hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 group animate-fade-in"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
                 <div className="flex items-start justify-between mb-4">
@@ -195,10 +195,7 @@ export default function Dashboard() {
                 <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
                   {project.name}
                 </h3>
-                <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                  {project.papers?.length || 0} papers added
-                </p>
-                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <div className="flex items-center gap-4 text-xs text-muted-foreground mt-4">
                   <span className="flex items-center gap-1">
                     <FileText className="w-3.5 h-3.5" />
                     {project.papers?.length || 0} papers
