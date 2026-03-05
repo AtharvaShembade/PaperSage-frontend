@@ -4,6 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Paper, SearchResult } from '@/types';
 import { searchPapers, fetchProjectPapers, addPaperToProject, processPaper, removePaperFromProject } from '@/services/api';
 import { Search, Plus, FileText, Loader2, CheckCircle, Clock, ExternalLink, Trash2 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface PapersTabProps {
   projectId: string;
@@ -16,10 +22,24 @@ export function PapersTab({ projectId }: PapersTabProps) {
   const [papers, setPapers] = useState<Paper[]>([]);
   const [addingPapers, setAddingPapers] = useState<Set<string>>(new Set());
   const [removingPapers, setRemovingPapers] = useState<Set<string>>(new Set());
+  const [paperToDelete, setPaperToDelete] = useState<Paper | null>(null);
 
   useEffect(() => {
     loadPapers();
   }, [projectId]);
+
+  useEffect(() => {
+    const hasProcessing = papers.some(p => p.status === 'processing');
+    if (!hasProcessing) return;
+    const interval = setInterval(async () => {
+      const data = await fetchProjectPapers(projectId);
+      setPapers(data);
+      if (!data.some(p => p.status === 'processing')) {
+        clearInterval(interval);
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [papers, projectId]);
 
   const loadPapers = async () => {
     const data = await fetchProjectPapers(projectId);
@@ -204,7 +224,7 @@ export function PapersTab({ projectId }: PapersTabProps) {
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => handleRemovePaper(String(paper.id))}
+                    onClick={() => setPaperToDelete(paper)}
                     disabled={removingPapers.has(String(paper.id))}
                     className="shrink-0 text-muted-foreground hover:text-red-400"
                   >
@@ -219,6 +239,34 @@ export function PapersTab({ projectId }: PapersTabProps) {
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!paperToDelete} onOpenChange={() => setPaperToDelete(null)}>
+        <DialogContent className="glass-strong border-border max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Remove paper?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground line-clamp-2">
+            "{paperToDelete?.title}" will be removed from this project.
+          </p>
+          <div className="flex gap-3 mt-2">
+            <Button variant="ghost" className="flex-1" onClick={() => setPaperToDelete(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              className="flex-1"
+              onClick={async () => {
+                if (!paperToDelete) return;
+                setPaperToDelete(null);
+                await handleRemovePaper(String(paperToDelete.id));
+              }}
+            >
+              Remove
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
