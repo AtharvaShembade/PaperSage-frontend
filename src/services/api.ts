@@ -34,6 +34,15 @@ export async function createProject(name: string): Promise<Project> {
   return response.json();
 }
 
+// Delete a project
+export async function deleteProject(id: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/projects/${id}`, {
+    method: 'DELETE',
+    headers: await getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error('Failed to delete project');
+}
+
 // Get project details
 export async function fetchProject(id: string): Promise<Project> {
   const response = await fetch(`${API_BASE_URL}/projects/${id}`, {

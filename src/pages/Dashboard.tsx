@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
-import { fetchProjects, createProject } from '@/services/api';
+import { fetchProjects, createProject, deleteProject } from '@/services/api';
 import { Project } from '@/types';
-import { 
-  Zap, Plus, Search, LogOut, FolderOpen, FileText, 
-  Calendar, Loader2, X
+import {
+  Zap, Plus, Search, LogOut, FolderOpen, FileText,
+  Calendar, Loader2, X, Trash2
 } from 'lucide-react';
 import {
   Dialog,
@@ -27,6 +27,8 @@ export default function Dashboard() {
   const [newProjectName, setNewProjectName] = useState('');
   // const [newProjectDesc, setNewProjectDesc] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -59,6 +61,20 @@ export default function Dashboard() {
       console.error('Failed to create project:', error);
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  const handleDeleteProject = async () => {
+    if (!projectToDelete) return;
+    setIsDeleting(true);
+    try {
+      await deleteProject(String(projectToDelete.id));
+      setProjects(prev => prev.filter(p => p.id !== projectToDelete.id));
+      setProjectToDelete(null);
+    } catch (error) {
+      console.error('Failed to delete project:', error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -182,16 +198,24 @@ export default function Dashboard() {
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProjects.map((project, index) => (
-              <button
+              <div
                 key={project.id}
-                onClick={() => navigate(`/workspace/${project.id}`)}
-                className="glass rounded-xl p-6 text-left hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 group animate-fade-in"
+                className="glass rounded-xl p-6 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 group animate-fade-in cursor-pointer"
                 style={{ animationDelay: `${index * 0.05}s` }}
+                onClick={() => navigate(`/workspace/${project.id}`)}
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center text-lg font-semibold text-foreground">
                     {project.name.charAt(0).toUpperCase()}
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-400 transition-opacity"
+                    onClick={(e) => { e.stopPropagation(); setProjectToDelete(project); }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
                   {project.name}
@@ -206,11 +230,36 @@ export default function Dashboard() {
                     {project.created_at?.split('T')[0] || 'N/A'}
                   </span>
                 </div>
-              </button>
+              </div>
             ))}
           </div>
         )}
       </main>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!projectToDelete} onOpenChange={() => setProjectToDelete(null)}>
+        <DialogContent className="glass-strong border-border max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Delete project?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            "{projectToDelete?.name}" and all its papers will be permanently deleted.
+          </p>
+          <div className="flex gap-3 mt-2">
+            <Button variant="ghost" className="flex-1" onClick={() => setProjectToDelete(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              className="flex-1"
+              disabled={isDeleting}
+              onClick={handleDeleteProject}
+            >
+              {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Delete'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

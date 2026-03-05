@@ -9,18 +9,33 @@ interface ChatTabProps {
   projectId: string;
 }
 
+const STORAGE_KEY = (projectId: string) => `chat_history_${projectId}`;
+
+const WELCOME_MESSAGE: ChatMessage = {
+  id: '1',
+  role: 'assistant',
+  content: "Hello! I'm your research assistant. Ask me anything about the papers in this project. I'll provide answers with citations from your collected research.",
+  timestamp: new Date().toISOString()
+};
+
 export function ChatTab({ projectId }: ChatTabProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: '1',
-      role: 'assistant',
-      content: "Hello! I'm your research assistant. Ask me anything about the papers in this project. I'll provide answers with citations from your collected research.",
-      timestamp: new Date().toISOString()
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY(projectId));
+      return saved ? JSON.parse(saved) : [WELCOME_MESSAGE];
+    } catch {
+      return [WELCOME_MESSAGE];
     }
-  ]);
+  });
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY(projectId), JSON.stringify(messages));
+    } catch {}
+  }, [messages, projectId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -115,7 +130,7 @@ export function ChatTab({ projectId }: ChatTabProps) {
         
         {isLoading && (
           <div className="flex gap-3 items-center animate-fade-in">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-cyan/20 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
               <Bot className="w-4 h-4 text-primary" />
             </div>
             <div className="glass rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-2">

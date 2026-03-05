@@ -98,15 +98,15 @@ export default function Workspace() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="papers" className="mt-0">
+          <TabsContent value="papers" className="mt-0" forceMount hidden={activeTab !== 'papers'}>
             <PapersTab projectId={projectId!} />
           </TabsContent>
-          
-          <TabsContent value="chat" className="mt-0">
+
+          <TabsContent value="chat" className="mt-0" forceMount hidden={activeTab !== 'chat'}>
             <ChatTab projectId={projectId!} />
           </TabsContent>
-          
-          <TabsContent value="graph" className="mt-0">
+
+          <TabsContent value="graph" className="mt-0" forceMount hidden={activeTab !== 'graph'}>
             <GraphTab projectId={projectId!} />
           </TabsContent>
         </Tabs>
