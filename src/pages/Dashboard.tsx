@@ -83,7 +83,7 @@ export default function Dashboard() {
 
           <div className="flex items-center gap-4">
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/50">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-cyan flex items-center justify-center text-sm font-medium text-primary-foreground">
+              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-sm font-medium text-primary-foreground">
                 {user?.name?.charAt(0).toUpperCase() || 'U'}
               </div>
               <span className="text-sm text-foreground">{user?.email}</span>
@@ -188,8 +188,8 @@ export default function Dashboard() {
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/20 to-cyan/20 flex items-center justify-center group-hover:from-primary/30 group-hover:to-cyan/30 transition-colors">
-                    <FolderOpen className="w-6 h-6 text-primary" />
+                  <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center text-lg font-semibold text-foreground">
+                    {project.name.charAt(0).toUpperCase()}
                   </div>
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">

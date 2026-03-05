@@ -54,7 +54,7 @@ export function ChatTab({ projectId }: ChatTabProps) {
     <div className="glass rounded-xl flex flex-col h-[600px]">
       {/* Chat Header */}
       <div className="p-4 border-b border-border flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-cyan flex items-center justify-center">
+        <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
           <Sparkles className="w-5 h-5 text-primary-foreground" />
         </div>
         <div>
@@ -74,7 +74,7 @@ export function ChatTab({ projectId }: ChatTabProps) {
             style={{ animationDelay: `${index * 0.05}s` }}
           >
             {message.role === 'assistant' && (
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-cyan/20 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
                 <Bot className="w-4 h-4 text-primary" />
               </div>
             )}
