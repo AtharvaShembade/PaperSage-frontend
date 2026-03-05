@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Paper, SearchResult } from '@/types';
-import { searchPapers, fetchProjectPapers, addPaperToProject, processPaper, removePaperFromProject } from '@/services/api';
+import { searchPapers, fetchProjectPapers, addPaperToProject, removePaperFromProject } from '@/services/api';
 import { Search, Plus, FileText, Loader2, CheckCircle, Clock, ExternalLink, Trash2 } from 'lucide-react';
 import {
   Dialog,

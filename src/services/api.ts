@@ -129,16 +129,3 @@ export async function removePaperFromProject(projectId: string, paperId: string)
   if (!response.ok) throw new Error('Failed to remove paper');
 }
 
-// Process paper (papers auto-process on add, this is a polling stub)
-export async function processPaper(paperId: string): Promise<Paper> {
-  // Papers are processed automatically in the background when added
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  return {
-    id: paperId,
-    external_id: paperId,
-    title: '',
-    abstract: '',
-    year: 0,
-    status: 'ready',
-  };
-}

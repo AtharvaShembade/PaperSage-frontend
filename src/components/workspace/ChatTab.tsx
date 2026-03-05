@@ -68,14 +68,26 @@ export function ChatTab({ projectId }: ChatTabProps) {
   return (
     <div className="glass rounded-xl flex flex-col h-[600px]">
       {/* Chat Header */}
-      <div className="p-4 border-b border-border flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-          <Sparkles className="w-5 h-5 text-primary-foreground" />
+      <div className="p-4 border-b border-border flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+            <Sparkles className="w-5 h-5 text-primary-foreground" />
+          </div>
+          <div>
+            <h2 className="font-semibold text-foreground">Research Assistant</h2>
+            <p className="text-sm text-muted-foreground">Ask questions about your papers</p>
+          </div>
         </div>
-        <div>
-          <h2 className="font-semibold text-foreground">Research Assistant</h2>
-          <p className="text-sm text-muted-foreground">Ask questions about your papers</p>
-        </div>
+        {messages.length > 1 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground hover:text-foreground"
+            onClick={() => setMessages([WELCOME_MESSAGE])}
+          >
+            Clear
+          </Button>
+        )}
       </div>
 
       {/* Messages */}
