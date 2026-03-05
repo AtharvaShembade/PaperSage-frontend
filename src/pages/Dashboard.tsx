@@ -122,6 +122,7 @@ export default function Dashboard() {
                     placeholder="e.g., Machine Learning Survey"
                     value={newProjectName}
                     onChange={(e) => setNewProjectName(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleCreateProject()}
                     className="bg-muted border-border"
                   />
                 </div>

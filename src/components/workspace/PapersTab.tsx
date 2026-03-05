@@ -112,7 +112,14 @@ export function PapersTab({ projectId }: PapersTabProps) {
     <div className="grid lg:grid-cols-2 gap-6">
       {/* Search Panel */}
       <div className="glass rounded-xl p-6">
-        <h2 className="text-lg font-semibold text-foreground mb-4">Search Papers</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-foreground">Search Papers</h2>
+          {searchResults.length > 0 && (
+            <Button variant="ghost" size="sm" onClick={() => { setSearchResults([]); setSearchQuery(''); }} className="text-muted-foreground hover:text-foreground">
+              Clear
+            </Button>
+          )}
+        </div>
         
         <div className="flex gap-2 mb-6">
           <div className="relative flex-1">
