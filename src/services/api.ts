@@ -1,7 +1,7 @@
 import { Project, Paper, SearchResult, ChatMessage, ChatSource, CitationNode, CitationEdge, ComparisonResponse } from '@/types';
 import { supabase } from '@/lib/supabase';
 
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api/v1';
 
 // Helper to get auth token from Supabase
 const getAuthHeaders = async () => {
