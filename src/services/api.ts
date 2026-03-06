@@ -81,6 +81,7 @@ export async function sendChatMessage(projectId: string, message: string): Promi
     content: data.answer,
     timestamp: new Date().toISOString(),
     sources: data.sources ?? [],
+    follow_ups: data.follow_ups ?? [],
   };
 }
 
