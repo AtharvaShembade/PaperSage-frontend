@@ -45,6 +45,7 @@ export interface ChatMessage {
   content: string;
   timestamp: string;
   sources?: ChatSource[];
+  follow_ups?: string[];
 }
 
 export interface CitationNode {
