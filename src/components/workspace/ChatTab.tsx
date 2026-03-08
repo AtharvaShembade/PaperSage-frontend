@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ChatMessage, ChatSource } from '@/types';
 import { sendChatMessage } from '@/services/api';
-import { Send, Bot, User, Loader2, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { Send, Bot, User, Loader2, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface ChatTabProps {
   projectId: string;
@@ -70,22 +70,23 @@ export function ChatTab({ projectId }: ChatTabProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
-    
+  const handleSend = async (text?: string) => {
+    const content = text ?? input;
+    if (!content.trim() || isLoading) return;
+
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       role: 'user',
-      content: input,
+      content,
       timestamp: new Date().toISOString()
     };
     
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
-    
+
     try {
-      const response = await sendChatMessage(projectId, input);
+      const response = await sendChatMessage(projectId, content);
       setMessages(prev => [...prev, response]);
     } catch (error: any) {
       const status = error?.status;
@@ -115,7 +116,7 @@ export function ChatTab({ projectId }: ChatTabProps) {
       <div className="p-4 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-            <Sparkles className="w-5 h-5 text-primary-foreground" />
+            <BookOpen className="w-5 h-5 text-primary-foreground" />
           </div>
           <div>
             <h2 className="font-semibold text-foreground">Research Assistant</h2>
@@ -137,36 +138,51 @@ export function ChatTab({ projectId }: ChatTabProps) {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message, index) => (
-          <div
-            key={message.id}
-            className={`flex gap-3 animate-fade-in ${
-              message.role === 'user' ? 'justify-end' : 'justify-start'
-            }`}
-            style={{ animationDelay: `${index * 0.05}s` }}
-          >
-            {message.role === 'assistant' && (
-              <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                <Bot className="w-4 h-4 text-primary" />
+          <div key={message.id}>
+            <div
+              className={`flex gap-3 animate-fade-in ${
+                message.role === 'user' ? 'justify-end' : 'justify-start'
+              }`}
+              style={{ animationDelay: `${index * 0.05}s` }}
+            >
+              {message.role === 'assistant' && (
+                <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                  <Bot className="w-4 h-4 text-primary" />
+                </div>
+              )}
+
+              <div className={`max-w-[80%] ${
+                message.role === 'user'
+                  ? 'bg-primary text-primary-foreground rounded-2xl rounded-br-md'
+                  : 'glass rounded-2xl rounded-bl-md'
+              } px-4 py-3`}>
+                <p className={message.role === 'user' ? 'text-primary-foreground' : 'text-foreground'}>
+                  {message.content}
+                </p>
+
+                {message.sources && message.sources.length > 0 && (
+                  <SourceList sources={message.sources} />
+                )}
               </div>
-            )}
-            
-            <div className={`max-w-[80%] ${
-              message.role === 'user' 
-                ? 'bg-primary text-primary-foreground rounded-2xl rounded-br-md' 
-                : 'glass rounded-2xl rounded-bl-md'
-            } px-4 py-3`}>
-              <p className={message.role === 'user' ? 'text-primary-foreground' : 'text-foreground'}>
-                {message.content}
-              </p>
-              
-              {message.sources && message.sources.length > 0 && (
-                <SourceList sources={message.sources} />
+
+              {message.role === 'user' && (
+                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
+                  <User className="w-4 h-4 text-primary-foreground" />
+                </div>
               )}
             </div>
-            
-            {message.role === 'user' && (
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
-                <User className="w-4 h-4 text-primary-foreground" />
+
+            {message.role === 'assistant' && message.follow_ups && message.follow_ups.length > 0 && (
+              <div className="ml-11 mt-2 flex flex-col gap-1.5">
+                {message.follow_ups.map((q, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleSend(q)}
+                    className="text-left text-xs text-muted-foreground hover:text-primary border border-border/50 hover:border-primary/40 rounded-lg px-3 py-1.5 transition-colors bg-muted/20 hover:bg-primary/5"
+                  >
+                    {q}
+                  </button>
+                ))}
               </div>
             )}
           </div>
@@ -194,11 +210,11 @@ export function ChatTab({ projectId }: ChatTabProps) {
             placeholder="Ask about your research papers..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) handleSend(); }}
             className="bg-muted border-border"
             disabled={isLoading}
           />
-          <Button onClick={handleSend} disabled={isLoading || !input.trim()}>
+          <Button onClick={() => handleSend()} disabled={isLoading || !input.trim()}>
             <Send className="w-4 h-4" />
           </Button>
         </div>
