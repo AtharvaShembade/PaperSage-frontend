@@ -254,6 +254,7 @@ export default function Dashboard() {
               className="flex-1"
               disabled={isDeleting}
               onClick={handleDeleteProject}
+              autoFocus
             >
               {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Delete'}
             </Button>

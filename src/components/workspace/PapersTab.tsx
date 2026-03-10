@@ -277,6 +277,7 @@ export function PapersTab({ projectId }: PapersTabProps) {
             <Button
               variant="destructive"
               className="flex-1"
+              autoFocus
               onClick={async () => {
                 if (!paperToDelete) return;
                 setPaperToDelete(null);
