@@ -21,6 +21,7 @@ export interface Paper {
   year?: number;
   status: 'processing' | 'ready' | 'error' | 'no_pdf';
   authors?: string[];
+  tldr?: string;
 }
 
 export interface SearchResult {

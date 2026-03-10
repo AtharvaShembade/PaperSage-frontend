@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Paper, SearchResult } from '@/types';
 import { searchPapers, fetchProjectPapers, addPaperToProject, removePaperFromProject } from '@/services/api';
-import { Search, Plus, FileText, Loader2, CheckCircle, Clock, ExternalLink, Trash2 } from 'lucide-react';
+import { Search, Plus, FileText, Loader2, CheckCircle, Clock, ExternalLink, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -16,6 +16,7 @@ interface PapersTabProps {
 }
 
 export function PapersTab({ projectId }: PapersTabProps) {
+  const [expandedTldr, setExpandedTldr] = useState<number | string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -226,7 +227,20 @@ export function PapersTab({ projectId }: PapersTabProps) {
                           : paper.status === 'no_pdf' ? 'No PDF (metadata only)'
                           : 'Error'}
                       </span>
+                      {paper.tldr && (
+                        <button
+                          onClick={() => setExpandedTldr(expandedTldr === paper.id ? null : paper.id)}
+                          className="text-xs text-muted-foreground hover:text-primary flex items-center gap-0.5 transition-colors"
+                        >
+                          TLDR {expandedTldr === paper.id ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                        </button>
+                      )}
                     </div>
+                    {expandedTldr === paper.id && paper.tldr && (
+                      <p className="mt-2 text-xs text-muted-foreground leading-relaxed border-t border-border/40 pt-2">
+                        {paper.tldr}
+                      </p>
+                    )}
                   </div>
                   <Button
                     size="sm"
