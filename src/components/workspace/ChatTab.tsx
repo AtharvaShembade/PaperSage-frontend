@@ -4,36 +4,49 @@ import { Button } from '@/components/ui/button';
 import { ChatMessage, ChatSource } from '@/types';
 import { sendChatMessage } from '@/services/api';
 import { Send, Bot, User, Loader2, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 interface ChatTabProps {
   projectId: string;
+  isActive?: boolean;
 }
 
 function SourceList({ sources }: { sources: ChatSource[] }) {
+  const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState<number | null>(null);
 
   return (
-    <div className="mt-3 pt-3 border-t border-border/50 space-y-1">
-      <p className="text-xs text-muted-foreground mb-2">Sources:</p>
-      {sources.map((source, i) => (
-        <div key={i} className="rounded-lg overflow-hidden border border-border/40">
-          <button
-            onClick={() => setExpanded(expanded === i ? null : i)}
-            className="w-full flex items-center justify-between px-3 py-1.5 bg-primary/10 hover:bg-primary/20 transition-colors text-left"
-          >
-            <span className="text-xs text-primary font-medium line-clamp-1">{source.title}</span>
-            {expanded === i
-              ? <ChevronUp className="w-3 h-3 text-primary shrink-0 ml-2" />
-              : <ChevronDown className="w-3 h-3 text-primary shrink-0 ml-2" />
-            }
-          </button>
-          {expanded === i && (
-            <p className="text-xs text-muted-foreground px-3 py-2 leading-relaxed bg-muted/30">
-              {source.chunk}
-            </p>
-          )}
+    <div className="mt-3 pt-3 border-t border-border/50">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
+      >
+        {open ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+        Sources ({sources.length})
+      </button>
+      {open && (
+        <div className="mt-2 space-y-1">
+          {sources.map((source, i) => (
+            <div key={i} className="rounded-lg overflow-hidden border border-border/40">
+              <button
+                onClick={() => setExpanded(expanded === i ? null : i)}
+                className="w-full flex items-center justify-between px-3 py-1.5 bg-primary/10 hover:bg-primary/20 transition-colors text-left"
+              >
+                <span className="text-xs text-primary font-medium line-clamp-1">{source.title}</span>
+                {expanded === i
+                  ? <ChevronUp className="w-3 h-3 text-primary shrink-0 ml-2" />
+                  : <ChevronDown className="w-3 h-3 text-primary shrink-0 ml-2" />
+                }
+              </button>
+              {expanded === i && (
+                <p className="text-xs text-muted-foreground px-3 py-2 leading-relaxed bg-muted/30">
+                  {source.chunk}
+                </p>
+              )}
+            </div>
+          ))}
         </div>
-      ))}
+      )}
     </div>
   );
 }
@@ -47,7 +60,7 @@ const WELCOME_MESSAGE: ChatMessage = {
   timestamp: new Date().toISOString()
 };
 
-export function ChatTab({ projectId }: ChatTabProps) {
+export function ChatTab({ projectId, isActive }: ChatTabProps) {
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY(projectId));
@@ -58,7 +71,9 @@ export function ChatTab({ projectId }: ChatTabProps) {
   });
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     try {
@@ -70,23 +85,39 @@ export function ChatTab({ projectId }: ChatTabProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const handleSend = async (text?: string) => {
+  useEffect(() => {
+    if (isActive) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
+    }
+  }, [isActive]);
+
+  const handleScroll = () => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    setShowScrollBtn(el.scrollHeight - el.scrollTop - el.clientHeight > 100);
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleSend = async (text?: string, deep = false) => {
     const content = text ?? input;
     if (!content.trim() || isLoading) return;
 
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       role: 'user',
-      content,
+      content: deep ? `${content} (deeper analysis)` : content,
       timestamp: new Date().toISOString()
     };
-    
+
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
 
     try {
-      const response = await sendChatMessage(projectId, content);
+      const response = await sendChatMessage(projectId, content, deep);
       setMessages(prev => [...prev, response]);
     } catch (error: any) {
       const status = error?.status;
@@ -136,7 +167,16 @@ export function ChatTab({ projectId }: ChatTabProps) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="relative flex-1 overflow-hidden">
+      {showScrollBtn && (
+        <button
+          onClick={scrollToBottom}
+          className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-lg hover:bg-primary/80 transition-colors"
+        >
+          <ChevronDown className="w-4 h-4 text-primary-foreground" />
+        </button>
+      )}
+      <div ref={scrollContainerRef} onScroll={handleScroll} className="h-full overflow-y-auto p-4 space-y-4">
         {messages.map((message, index) => (
           <div key={message.id}>
             <div
@@ -156,9 +196,13 @@ export function ChatTab({ projectId }: ChatTabProps) {
                   ? 'bg-primary text-primary-foreground rounded-2xl rounded-br-md'
                   : 'glass rounded-2xl rounded-bl-md'
               } px-4 py-3`}>
-                <p className={message.role === 'user' ? 'text-primary-foreground' : 'text-foreground'}>
-                  {message.content}
-                </p>
+                {message.role === 'user' ? (
+                  <p className="text-primary-foreground">{message.content}</p>
+                ) : (
+                  <div className="prose prose-sm prose-invert max-w-none text-foreground [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:my-0.5 [&_strong]:text-foreground [&_p]:mb-2 last:[&_p]:mb-0">
+                    <ReactMarkdown>{message.content}</ReactMarkdown>
+                  </div>
+                )}
 
                 {message.sources && message.sources.length > 0 && (
                   <SourceList sources={message.sources} />
@@ -172,17 +216,34 @@ export function ChatTab({ projectId }: ChatTabProps) {
               )}
             </div>
 
-            {message.role === 'assistant' && message.follow_ups && message.follow_ups.length > 0 && (
-              <div className="ml-11 mt-2 flex flex-col gap-1.5">
-                {message.follow_ups.map((q, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleSend(q)}
-                    className="text-left text-xs text-muted-foreground hover:text-primary border border-border/50 hover:border-primary/40 rounded-lg px-3 py-1.5 transition-colors bg-muted/20 hover:bg-primary/5"
-                  >
-                    {q}
-                  </button>
-                ))}
+            {message.role === 'assistant' && message.id !== '1' && (
+              <div className="ml-11 mt-2 flex flex-col gap-2">
+                {message.follow_ups && message.follow_ups.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {message.follow_ups.map((q, i) => (
+                      <button
+                        key={i}
+                        onClick={() => handleSend(q)}
+                        className="text-xs text-muted-foreground hover:text-primary border border-border/50 hover:border-primary/40 rounded-full px-3 py-1 transition-colors bg-muted/20 hover:bg-primary/5"
+                      >
+                        {q}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {message.sources && message.sources.length > 0 && (
+                  <div>
+                    <button
+                      onClick={() => handleSend(
+                        messages.slice(0, messages.indexOf(message)).filter(m => m.role === 'user').at(-1)?.content ?? '',
+                        true
+                      )}
+                      className="text-xs text-primary hover:text-primary/80 border border-primary/30 hover:border-primary/60 rounded-full px-3 py-1 transition-colors bg-primary/5 hover:bg-primary/10 font-medium"
+                    >
+                      ↓ Go deeper
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -201,6 +262,7 @@ export function ChatTab({ projectId }: ChatTabProps) {
         )}
         
         <div ref={messagesEndRef} />
+      </div>
       </div>
 
       {/* Input */}

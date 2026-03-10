@@ -66,11 +66,11 @@ export async function addPaperToProject(
 }
 
 // Chat with RAG
-export async function sendChatMessage(projectId: string, message: string): Promise<ChatMessage> {
+export async function sendChatMessage(projectId: string, message: string, deep = false): Promise<ChatMessage> {
   const response = await fetch(`${API_BASE_URL}/rag/chat`, {
     method: 'POST',
     headers: await getAuthHeaders(),
-    body: JSON.stringify({ project_id: parseInt(projectId), query: message }),
+    body: JSON.stringify({ project_id: parseInt(projectId), query: message, deep }),
   });
   if (!response.ok) throw Object.assign(new Error('Failed to send message'), { status: response.status });
   const data = await response.json();
