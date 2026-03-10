@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ChatMessage, ChatSource } from '@/types';
 import { sendChatMessage } from '@/services/api';
 import { Send, Bot, User, Loader2, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 interface ChatTabProps {
   projectId: string;
@@ -167,9 +168,13 @@ export function ChatTab({ projectId }: ChatTabProps) {
                   ? 'bg-primary text-primary-foreground rounded-2xl rounded-br-md'
                   : 'glass rounded-2xl rounded-bl-md'
               } px-4 py-3`}>
-                <p className={message.role === 'user' ? 'text-primary-foreground' : 'text-foreground'}>
-                  {message.content}
-                </p>
+                {message.role === 'user' ? (
+                  <p className="text-primary-foreground">{message.content}</p>
+                ) : (
+                  <div className="prose prose-sm prose-invert max-w-none text-foreground [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:my-0.5 [&_strong]:text-foreground [&_p]:mb-2 last:[&_p]:mb-0">
+                    <ReactMarkdown>{message.content}</ReactMarkdown>
+                  </div>
+                )}
 
                 {message.sources && message.sources.length > 0 && (
                   <SourceList sources={message.sources} />
