@@ -8,6 +8,7 @@ import ReactMarkdown from 'react-markdown';
 
 interface ChatTabProps {
   projectId: string;
+  isActive?: boolean;
 }
 
 function SourceList({ sources }: { sources: ChatSource[] }) {
@@ -59,7 +60,7 @@ const WELCOME_MESSAGE: ChatMessage = {
   timestamp: new Date().toISOString()
 };
 
-export function ChatTab({ projectId }: ChatTabProps) {
+export function ChatTab({ projectId, isActive }: ChatTabProps) {
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY(projectId));
@@ -70,7 +71,9 @@ export function ChatTab({ projectId }: ChatTabProps) {
   });
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     try {
@@ -81,6 +84,22 @@ export function ChatTab({ projectId }: ChatTabProps) {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    if (isActive) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
+    }
+  }, [isActive]);
+
+  const handleScroll = () => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    setShowScrollBtn(el.scrollHeight - el.scrollTop - el.clientHeight > 100);
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const handleSend = async (text?: string, deep = false) => {
     const content = text ?? input;
@@ -148,7 +167,16 @@ export function ChatTab({ projectId }: ChatTabProps) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="relative flex-1 overflow-hidden">
+      {showScrollBtn && (
+        <button
+          onClick={scrollToBottom}
+          className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-lg hover:bg-primary/80 transition-colors"
+        >
+          <ChevronDown className="w-4 h-4 text-primary-foreground" />
+        </button>
+      )}
+      <div ref={scrollContainerRef} onScroll={handleScroll} className="h-full overflow-y-auto p-4 space-y-4">
         {messages.map((message, index) => (
           <div key={message.id}>
             <div
@@ -234,6 +262,7 @@ export function ChatTab({ projectId }: ChatTabProps) {
         )}
         
         <div ref={messagesEndRef} />
+      </div>
       </div>
 
       {/* Input */}

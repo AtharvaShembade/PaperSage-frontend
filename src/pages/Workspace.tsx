@@ -103,7 +103,7 @@ export default function Workspace() {
           </TabsContent>
 
           <TabsContent value="chat" className="mt-0" forceMount hidden={activeTab !== 'chat'}>
-            <ChatTab projectId={projectId!} />
+            <ChatTab projectId={projectId!} isActive={activeTab === 'chat'} />
           </TabsContent>
 
           <TabsContent value="graph" className="mt-0" forceMount hidden={activeTab !== 'graph'}>
