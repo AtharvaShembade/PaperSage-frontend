@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Paper, SearchResult } from '@/types';
-import { searchPapers, fetchProjectPapers, addPaperToProject, removePaperFromProject } from '@/services/api';
+import { searchPapers, fetchProjectPapers, addPaperToProject, removePaperFromProject, fetchRelatedPapers } from '@/services/api';
 import { Search, Plus, FileText, Loader2, CheckCircle, Clock, Trash2, ChevronDown, ChevronUp, Quote, Check } from 'lucide-react';
 import {
   Dialog,
@@ -25,6 +25,8 @@ export function PapersTab({ projectId }: PapersTabProps) {
   const [addingPapers, setAddingPapers] = useState<Set<string>>(new Set());
   const [removingPapers, setRemovingPapers] = useState<Set<string>>(new Set());
   const [paperToDelete, setPaperToDelete] = useState<Paper | null>(null);
+  const [isDiscovering, setIsDiscovering] = useState(false);
+  const [discoverMode, setDiscoverMode] = useState(false);
   const [openCiteId, setOpenCiteId] = useState<number | string | null>(null);
   const [citePos, setCitePos] = useState<{ top: number; left: number } | null>(null);
   const [copiedFormat, setCopiedFormat] = useState<string | null>(null);
@@ -98,6 +100,7 @@ export function PapersTab({ projectId }: PapersTabProps) {
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
     setIsSearching(true);
+    setDiscoverMode(false);
     try {
       const results = await searchPapers(searchQuery);
       setSearchResults(results);
@@ -105,6 +108,21 @@ export function PapersTab({ projectId }: PapersTabProps) {
       console.error('Search failed:', error);
     } finally {
       setIsSearching(false);
+    }
+  };
+
+  const handleDiscover = async () => {
+    setIsDiscovering(true);
+    setDiscoverMode(true);
+    setSearchQuery('');
+    try {
+      const results = await fetchRelatedPapers(projectId);
+      setSearchResults(results);
+    } catch (error) {
+      console.error('Discovery failed:', error);
+      setDiscoverMode(false);
+    } finally {
+      setIsDiscovering(false);
     }
   };
 
@@ -162,14 +180,30 @@ export function PapersTab({ projectId }: PapersTabProps) {
       {/* Search Panel */}
       <div className="glass rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-foreground">Search Papers</h2>
-          {searchResults.length > 0 && (
-            <Button variant="ghost" size="sm" onClick={() => { setSearchResults([]); setSearchQuery(''); }} className="text-muted-foreground hover:text-foreground">
-              Clear
-            </Button>
-          )}
+          <h2 className="text-lg font-semibold text-foreground">
+            {discoverMode ? 'Related Papers' : 'Search Papers'}
+          </h2>
+          <div className="flex items-center gap-2">
+            {papers.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDiscover}
+                disabled={isDiscovering}
+                className="text-primary hover:text-primary/80 gap-1.5"
+              >
+                {isDiscovering && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                {isDiscovering ? 'Finding...' : 'Find Related'}
+              </Button>
+            )}
+            {searchResults.length > 0 && (
+              <Button variant="ghost" size="sm" onClick={() => { setSearchResults([]); setSearchQuery(''); setDiscoverMode(false); }} className="text-muted-foreground hover:text-foreground">
+                Clear
+              </Button>
+            )}
+          </div>
         </div>
-        
+
         <div className="flex gap-2 mb-6">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -186,11 +220,13 @@ export function PapersTab({ projectId }: PapersTabProps) {
           </Button>
         </div>
 
-        {/* Search Results */}
+        {/* Search / Discovery Results */}
         <div className="space-y-4 max-h-[500px] overflow-y-auto">
-          {searchResults.length === 0 && !isSearching && (
+          {searchResults.length === 0 && !isSearching && !isDiscovering && (
             <p className="text-center text-muted-foreground py-8">
-              Search for papers to add to your project
+              {papers.length > 0
+                ? 'Search for papers or click Find Related'
+                : 'Search for papers to add to your project'}
             </p>
           )}
           

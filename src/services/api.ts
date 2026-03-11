@@ -85,6 +85,15 @@ export async function sendChatMessage(projectId: string, message: string, deep =
   };
 }
 
+// Discover related papers for a project
+export async function fetchRelatedPapers(projectId: string): Promise<SearchResult[]> {
+  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/discover`, {
+    headers: await getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error('Failed to fetch related papers');
+  return response.json();
+}
+
 // Search papers (Semantic Scholar)
 export async function searchPapers(query: string): Promise<SearchResult[]> {
   const response = await fetch(`${API_BASE_URL}/search/?q=${encodeURIComponent(query)}&limit=20`, {
