@@ -7,7 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PapersTab } from '@/components/workspace/PapersTab';
 import { ChatTab } from '@/components/workspace/ChatTab';
 import { GraphTab } from '@/components/workspace/GraphTab';
-import { ArrowLeft, Search, MessageSquare, TableProperties, Loader2 } from 'lucide-react';
+import { AnnotationsTab } from '@/components/workspace/AnnotationsTab';
+import { ArrowLeft, Search, MessageSquare, TableProperties, Bookmark, Loader2 } from 'lucide-react';
 
 export default function Workspace() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -96,6 +97,13 @@ export default function Workspace() {
               <TableProperties className="w-4 h-4" />
               Compare Papers
             </TabsTrigger>
+            <TabsTrigger
+              value="notes"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
+            >
+              <Bookmark className="w-4 h-4" />
+              Notes
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="papers" className="mt-0" forceMount hidden={activeTab !== 'papers'}>
@@ -108,6 +116,10 @@ export default function Workspace() {
 
           <TabsContent value="graph" className="mt-0" forceMount hidden={activeTab !== 'graph'}>
             <GraphTab projectId={projectId!} />
+          </TabsContent>
+
+          <TabsContent value="notes" className="mt-0" forceMount hidden={activeTab !== 'notes'}>
+            <AnnotationsTab projectId={projectId!} isActive={activeTab === 'notes'} />
           </TabsContent>
         </Tabs>
       </main>

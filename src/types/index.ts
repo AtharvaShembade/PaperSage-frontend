@@ -76,6 +76,15 @@ export interface ComparisonResponse {
   skipped: string[];
 }
 
+export interface Annotation {
+  id: number;
+  project_id: number;
+  paper_title: string;
+  chunk_text: string;
+  user_note?: string;
+  created_at: string;
+}
+
 export interface AuthState {
   isAuthenticated: boolean;
   user: User | null;

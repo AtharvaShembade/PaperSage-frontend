@@ -2,8 +2,8 @@ import { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ChatMessage, ChatSource } from '@/types';
-import { sendChatMessage } from '@/services/api';
-import { Send, Bot, User, Loader2, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
+import { sendChatMessage, pinAnnotation } from '@/services/api';
+import { Send, Bot, User, Loader2, BookOpen, ChevronDown, ChevronUp, Bookmark, BookmarkCheck } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 interface ChatTabProps {
@@ -11,9 +11,24 @@ interface ChatTabProps {
   isActive?: boolean;
 }
 
-function SourceList({ sources }: { sources: ChatSource[] }) {
+function SourceList({ sources, projectId }: { sources: ChatSource[]; projectId: string }) {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState<number | null>(null);
+  const [pinned, setPinned] = useState<Set<number>>(new Set());
+  const [pinning, setPinning] = useState<number | null>(null);
+
+  const handlePin = async (i: number, source: ChatSource) => {
+    if (pinned.has(i) || pinning === i) return;
+    setPinning(i);
+    try {
+      await pinAnnotation(projectId, source.title, source.chunk);
+      setPinned(prev => new Set(prev).add(i));
+    } catch {
+      // silently fail — backend not wired yet
+    } finally {
+      setPinning(null);
+    }
+  };
 
   return (
     <div className="mt-3 pt-3 border-t border-border/50">
@@ -39,9 +54,31 @@ function SourceList({ sources }: { sources: ChatSource[] }) {
                 }
               </button>
               {expanded === i && (
-                <p className="text-xs text-muted-foreground px-3 py-2 leading-relaxed bg-muted/30">
-                  {source.chunk}
-                </p>
+                <div className="bg-muted/30">
+                  <p className="text-xs text-muted-foreground px-3 pt-2 pb-1 leading-relaxed">
+                    {source.chunk}
+                  </p>
+                  <div className="px-3 pb-2 flex justify-end">
+                    <button
+                      onClick={() => handlePin(i, source)}
+                      disabled={pinned.has(i) || pinning === i}
+                      className={`flex items-center gap-1 text-xs rounded-full px-2.5 py-1 transition-colors ${
+                        pinned.has(i)
+                          ? 'text-primary bg-primary/10 cursor-default'
+                          : 'text-muted-foreground hover:text-primary hover:bg-primary/10'
+                      }`}
+                    >
+                      {pinning === i ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : pinned.has(i) ? (
+                        <BookmarkCheck className="w-3 h-3" />
+                      ) : (
+                        <Bookmark className="w-3 h-3" />
+                      )}
+                      {pinned.has(i) ? 'Pinned' : 'Pin to notes'}
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           ))}
@@ -205,7 +242,7 @@ export function ChatTab({ projectId, isActive }: ChatTabProps) {
                 )}
 
                 {message.sources && message.sources.length > 0 && (
-                  <SourceList sources={message.sources} />
+                  <SourceList sources={message.sources} projectId={projectId} />
                 )}
               </div>
 

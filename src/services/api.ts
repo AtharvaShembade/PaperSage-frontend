@@ -1,4 +1,4 @@
-import { Project, Paper, SearchResult, ChatMessage, ChatSource, CitationNode, CitationEdge, ComparisonResponse } from '@/types';
+import { Project, Paper, SearchResult, ChatMessage, ChatSource, CitationNode, CitationEdge, ComparisonResponse, Annotation } from '@/types';
 import { supabase } from '@/lib/supabase';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api/v1';
@@ -120,6 +120,43 @@ export async function fetchComparisonTable(projectId: string): Promise<Compariso
   });
   if (!response.ok) throw new Error('Failed to fetch comparison table');
   return response.json();
+}
+
+// Annotations
+export async function fetchAnnotations(projectId: string): Promise<Annotation[]> {
+  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/annotations`, {
+    headers: await getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error('Failed to fetch annotations');
+  return response.json();
+}
+
+export async function pinAnnotation(projectId: string, paperTitle: string, chunkText: string): Promise<Annotation> {
+  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/annotations`, {
+    method: 'POST',
+    headers: await getAuthHeaders(),
+    body: JSON.stringify({ paper_title: paperTitle, chunk_text: chunkText }),
+  });
+  if (!response.ok) throw new Error('Failed to pin annotation');
+  return response.json();
+}
+
+export async function updateAnnotation(annotationId: number, userNote: string): Promise<Annotation> {
+  const response = await fetch(`${API_BASE_URL}/annotations/${annotationId}`, {
+    method: 'PATCH',
+    headers: await getAuthHeaders(),
+    body: JSON.stringify({ user_note: userNote }),
+  });
+  if (!response.ok) throw new Error('Failed to update annotation');
+  return response.json();
+}
+
+export async function deleteAnnotation(annotationId: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/annotations/${annotationId}`, {
+    method: 'DELETE',
+    headers: await getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error('Failed to delete annotation');
 }
 
 // Remove paper from project
