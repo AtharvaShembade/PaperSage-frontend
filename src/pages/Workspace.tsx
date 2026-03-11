@@ -8,13 +8,15 @@ import { PapersTab } from '@/components/workspace/PapersTab';
 import { ChatTab } from '@/components/workspace/ChatTab';
 import { GraphTab } from '@/components/workspace/GraphTab';
 import { AnnotationsTab } from '@/components/workspace/AnnotationsTab';
-import { ArrowLeft, Search, MessageSquare, TableProperties, Bookmark, Loader2 } from 'lucide-react';
+import { LitReviewDialog } from '@/components/workspace/LitReviewDialog';
+import { ArrowLeft, Search, MessageSquare, TableProperties, Bookmark, BookOpen, Loader2 } from 'lucide-react';
 
 export default function Workspace() {
   const { projectId } = useParams<{ projectId: string }>();
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('papers');
+  const [litReviewOpen, setLitReviewOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -69,8 +71,22 @@ export default function Workspace() {
               <p className="text-sm text-muted-foreground">{project.papers?.length ?? 0} papers</p>
             </div>
           </div>
+
+          <div className="ml-auto">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 text-primary border-primary/30 hover:bg-primary/10"
+              onClick={() => setLitReviewOpen(true)}
+            >
+              <BookOpen className="w-4 h-4" />
+              Literature Review
+            </Button>
+          </div>
         </div>
       </header>
+
+      <LitReviewDialog projectId={projectId!} open={litReviewOpen} onOpenChange={setLitReviewOpen} />
 
       {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-6">

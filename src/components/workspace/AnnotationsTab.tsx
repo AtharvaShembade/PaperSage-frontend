@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback, forwardRef } from 'react';
 import { Annotation } from '@/types';
 import { fetchAnnotations, updateAnnotation, deleteAnnotation } from '@/services/api';
 import { Bookmark, Trash2, Loader2, StickyNote, NotebookPen } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 const PROJECT_NOTES_KEY = (projectId: string) => `project_notes_${projectId}`;
 
@@ -149,8 +150,8 @@ function AnnotationCard({
       </div>
 
       {/* Chunk */}
-      <blockquote className="border-l-2 border-primary/30 pl-3 text-xs text-muted-foreground leading-relaxed line-clamp-4">
-        {annotation.chunk_text}
+      <blockquote className="border-l-2 border-primary/30 pl-3 text-xs text-muted-foreground leading-relaxed prose prose-sm prose-invert max-w-none [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_strong]:text-muted-foreground [&_p]:mb-1 last:[&_p]:mb-0">
+        <ReactMarkdown>{annotation.chunk_text}</ReactMarkdown>
       </blockquote>
 
       {/* User note */}

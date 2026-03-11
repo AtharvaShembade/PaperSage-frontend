@@ -159,6 +159,27 @@ export async function deleteAnnotation(annotationId: number): Promise<void> {
   if (!response.ok) throw new Error('Failed to delete annotation');
 }
 
+// Literature Review
+export async function litReviewSearch(projectId: string, question: string): Promise<{ paper_ids: number[]; message: string }> {
+  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/lit-review/search`, {
+    method: 'POST',
+    headers: await getAuthHeaders(),
+    body: JSON.stringify({ question }),
+  });
+  if (!response.ok) throw new Error('Failed to search papers for review');
+  return response.json();
+}
+
+export async function litReviewGenerate(projectId: string, question: string): Promise<{ review: string }> {
+  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/lit-review/generate`, {
+    method: 'POST',
+    headers: await getAuthHeaders(),
+    body: JSON.stringify({ question }),
+  });
+  if (!response.ok) throw new Error('Failed to generate literature review');
+  return response.json();
+}
+
 // Remove paper from project
 export async function removePaperFromProject(projectId: string, paperId: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/papers/projects/${projectId}/papers/${paperId}`, {
