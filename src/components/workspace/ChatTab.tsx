@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ChatMessage, ChatSource } from '@/types';
-import { sendChatMessage, pinAnnotation } from '@/services/api';
+import { ChatMessage, ChatSession, ChatSource } from '@/types';
+import { sendChatMessage, pinAnnotation, fetchChatSessions, createChatSession, updateChatSession, deleteChatSession } from '@/services/api';
 import { Send, Bot, User, Loader2, BookOpen, ChevronDown, ChevronUp, Bookmark, BookmarkCheck, Plus, Trash2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
@@ -13,16 +13,7 @@ interface ChatTabProps {
   onPendingQueryConsumed?: () => void;
 }
 
-interface ChatSession {
-  id: string;
-  name: string;
-  createdAt: string;
-  messages: ChatMessage[];
-}
-
-// ── Storage helpers ──────────────────────────────────────────────────────────
-
-const SESSIONS_KEY = (pid: string) => `chat_sessions_${pid}`;
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
 const WELCOME_MESSAGE = (): ChatMessage => ({
   id: '1',
@@ -30,42 +21,6 @@ const WELCOME_MESSAGE = (): ChatMessage => ({
   content: "Hello! I'm your research assistant. Ask me anything about the papers in this project. I'll provide answers with citations from your collected research.",
   timestamp: new Date().toISOString(),
 });
-
-const newSession = (): ChatSession => ({
-  id: Date.now().toString(),
-  name: 'New Chat',
-  createdAt: new Date().toISOString(),
-  messages: [WELCOME_MESSAGE()],
-});
-
-function loadSessions(projectId: string): ChatSession[] {
-  try {
-    const raw = localStorage.getItem(SESSIONS_KEY(projectId));
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-    }
-    // Migrate old single-chat storage if present
-    const legacy = localStorage.getItem(`chat_history_${projectId}`);
-    if (legacy) {
-      const msgs = JSON.parse(legacy) as ChatMessage[];
-      if (msgs.length > 1) {
-        const firstUser = msgs.find(m => m.role === 'user');
-        return [{
-          id: Date.now().toString(),
-          name: firstUser ? firstUser.content.slice(0, 28) : 'Chat 1',
-          createdAt: msgs[0].timestamp,
-          messages: msgs,
-        }];
-      }
-    }
-  } catch {}
-  return [newSession()];
-}
-
-function saveSessions(projectId: string, sessions: ChatSession[]) {
-  try { localStorage.setItem(SESSIONS_KEY(projectId), JSON.stringify(sessions)); } catch {}
-}
 
 // ── Relative timestamp ───────────────────────────────────────────────────────
 
@@ -155,22 +110,43 @@ function SourceList({ sources, projectId }: { sources: ChatSource[]; projectId: 
 // ── Main component ───────────────────────────────────────────────────────────
 
 export function ChatTab({ projectId, isActive, pendingQuery, onPendingQueryConsumed }: ChatTabProps) {
-  const [sessions, setSessions] = useState<ChatSession[]>(() => loadSessions(projectId));
-  const [activeId, setActiveId] = useState<string>(() => loadSessions(projectId)[0].id);
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [activeId, setActiveId] = useState<number | null>(null);
+  const [sessionsLoading, setSessionsLoading] = useState(true);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
-  const [hoveredSessionId, setHoveredSessionId] = useState<string | null>(null);
+  const [hoveredSessionId, setHoveredSessionId] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const activeSession = sessions.find(s => s.id === activeId) ?? sessions[0];
-  const messages = activeSession?.messages ?? [];
+  const activeSession = sessions.find(s => s.id === activeId) ?? sessions[0] ?? null;
+  const messages: ChatMessage[] = activeSession
+    ? (activeSession.messages.length > 0 ? activeSession.messages : [WELCOME_MESSAGE()])
+    : [];
 
-  // Persist on change
+  // Load sessions from DB on mount / project change
   useEffect(() => {
-    saveSessions(projectId, sessions);
-  }, [sessions, projectId]);
+    let cancelled = false;
+    const load = async () => {
+      setSessionsLoading(true);
+      try {
+        let data = await fetchChatSessions(projectId);
+        if (data.length === 0) {
+          const s = await createChatSession(projectId);
+          data = [s];
+        }
+        if (!cancelled) {
+          setSessions(data);
+          setActiveId(data[0].id);
+        }
+      } catch {} finally {
+        if (!cancelled) setSessionsLoading(false);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, [projectId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -187,27 +163,33 @@ export function ChatTab({ projectId, isActive, pendingQuery, onPendingQueryConsu
     }
   }, [pendingQuery, isActive]);
 
-  const updateMessages = (id: string, msgs: ChatMessage[]) => {
-    setSessions(prev => prev.map(s => s.id === id ? { ...s, messages: msgs } : s));
+  const handleNewSession = async () => {
+    try {
+      const s = await createChatSession(projectId);
+      setSessions(prev => [s, ...prev]);
+      setActiveId(s.id);
+    } catch {}
   };
 
-  const handleNewSession = () => {
-    const s = newSession();
-    setSessions(prev => [s, ...prev]);
-    setActiveId(s.id);
-  };
-
-  const handleDeleteSession = (id: string) => {
-    setSessions(prev => {
-      const remaining = prev.filter(s => s.id !== id);
-      if (remaining.length === 0) {
-        const s = newSession();
-        setActiveId(s.id);
-        return [s];
-      }
-      if (id === activeId) setActiveId(remaining[0].id);
-      return remaining;
-    });
+  const handleDeleteSession = async (id: number) => {
+    try {
+      await deleteChatSession(id);
+      setSessions(prev => {
+        const remaining = prev.filter(s => s.id !== id);
+        if (id === activeId && remaining.length > 0) setActiveId(remaining[0].id);
+        return remaining;
+      });
+      // If deleted last session, create a new one
+      setSessions(prev => {
+        if (prev.length === 0) {
+          createChatSession(projectId).then(s => {
+            setSessions([s]);
+            setActiveId(s.id);
+          });
+        }
+        return prev;
+      });
+    } catch {}
   };
 
   const handleScroll = () => {
@@ -220,10 +202,12 @@ export function ChatTab({ projectId, isActive, pendingQuery, onPendingQueryConsu
 
   const handleSend = async (text?: string, deep = false) => {
     const content = text ?? input;
-    if (!content.trim() || isLoading) return;
+    if (!content.trim() || isLoading || !activeSession) return;
 
-    const currentId = activeId;
-    const currentMessages = sessions.find(s => s.id === currentId)?.messages ?? [];
+    const currentSessionId = activeSession.id;
+    const currentMessages: ChatMessage[] = activeSession.messages.length > 0
+      ? activeSession.messages
+      : [WELCOME_MESSAGE()];
 
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
@@ -232,24 +216,27 @@ export function ChatTab({ projectId, isActive, pendingQuery, onPendingQueryConsu
       timestamp: new Date().toISOString(),
     };
 
-    const newMessages = [...currentMessages, userMessage];
-
-    // Auto-name session from first user message
     const isFirstUserMsg = !currentMessages.some(m => m.role === 'user');
-    setSessions(prev => prev.map(s => s.id === currentId ? {
-      ...s,
-      messages: newMessages,
-      name: isFirstUserMsg ? content.slice(0, 30) : s.name,
-    } : s));
+    const newName = isFirstUserMsg ? content.slice(0, 30) : activeSession.name;
+    const messagesWithUser = [...currentMessages.filter(m => m.id !== '1'), userMessage];
 
+    // Optimistic update
+    setSessions(prev => prev.map(s => s.id === currentSessionId
+      ? { ...s, messages: messagesWithUser, name: newName }
+      : s
+    ));
     setInput('');
     setIsLoading(true);
 
     try {
       const response = await sendChatMessage(projectId, content, deep);
-      setSessions(prev => prev.map(s =>
-        s.id === currentId ? { ...s, messages: [...s.messages, response] } : s
+      const finalMessages = [...messagesWithUser, response];
+      setSessions(prev => prev.map(s => s.id === currentSessionId
+        ? { ...s, messages: finalMessages }
+        : s
       ));
+      // Persist to DB
+      await updateChatSession(currentSessionId, { messages: finalMessages as object[], name: newName });
     } catch (error: any) {
       const status = error?.status;
       const errText = !status
@@ -257,17 +244,10 @@ export function ChatTab({ projectId, isActive, pendingQuery, onPendingQueryConsu
         : status === 401 ? "Your session has expired. Please refresh the page."
         : status === 404 ? "This project could not be found."
         : "Something went wrong on our end. Try again in a moment.";
-      setSessions(prev => prev.map(s =>
-        s.id === currentId ? {
-          ...s,
-          messages: [...s.messages, {
-            id: Date.now().toString(),
-            role: 'assistant',
-            content: errText,
-            timestamp: new Date().toISOString(),
-          }]
-        } : s
-      ));
+      const errMsg: ChatMessage = { id: Date.now().toString(), role: 'assistant', content: errText, timestamp: new Date().toISOString() };
+      const finalMessages = [...messagesWithUser, errMsg];
+      setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: finalMessages } : s));
+      await updateChatSession(currentSessionId, { messages: finalMessages as object[] }).catch(() => {});
     } finally {
       setIsLoading(false);
     }
@@ -288,7 +268,11 @@ export function ChatTab({ projectId, isActive, pendingQuery, onPendingQueryConsu
           </button>
         </div>
         <div className="flex-1 overflow-y-auto py-2">
-          {sessions.map(session => (
+          {sessionsLoading ? (
+            <div className="flex justify-center pt-6">
+              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+            </div>
+          ) : sessions.map(session => (
             <div
               key={session.id}
               onMouseEnter={() => setHoveredSessionId(session.id)}
@@ -306,7 +290,7 @@ export function ChatTab({ projectId, isActive, pendingQuery, onPendingQueryConsu
                 {session.name}
               </p>
               <p className="text-[10px] text-muted-foreground/60 mt-0.5">
-                {relativeTime(session.createdAt)}
+                {relativeTime(session.created_at)}
               </p>
               {hoveredSessionId === session.id && sessions.length > 1 && (
                 <button
@@ -339,7 +323,11 @@ export function ChatTab({ projectId, isActive, pendingQuery, onPendingQueryConsu
               variant="ghost"
               size="sm"
               className="text-muted-foreground hover:text-foreground"
-              onClick={() => updateMessages(activeId, [WELCOME_MESSAGE()])}
+              onClick={() => {
+              if (!activeSession) return;
+              setSessions(prev => prev.map(s => s.id === activeSession.id ? { ...s, messages: [] } : s));
+              updateChatSession(activeSession.id, { messages: [] }).catch(() => {});
+            }}
             >
               Clear
             </Button>

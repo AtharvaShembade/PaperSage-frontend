@@ -85,6 +85,14 @@ export interface Annotation {
   created_at: string;
 }
 
+export interface ChatSession {
+  id: number;
+  project_id: number;
+  name: string;
+  created_at: string;
+  messages: ChatMessage[];
+}
+
 export interface GapEntry {
   claim: string;
   evidence: string;

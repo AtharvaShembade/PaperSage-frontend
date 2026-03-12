@@ -1,4 +1,4 @@
-import { Project, Paper, SearchResult, ChatMessage, ChatSource, CitationNode, CitationEdge, ComparisonResponse, Annotation } from '@/types';
+import { Project, Paper, SearchResult, ChatMessage, ChatSource, CitationNode, CitationEdge, ComparisonResponse, Annotation, ChatSession, GapAnalysis } from '@/types';
 import { supabase } from '@/lib/supabase';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api/v1';
@@ -189,8 +189,48 @@ export async function litReviewGenerate(projectId: string, question: string): Pr
   return response.json();
 }
 
+// Chat sessions
+export async function fetchChatSessions(projectId: string): Promise<ChatSession[]> {
+  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/chat-sessions`, {
+    headers: await getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error('Failed to fetch chat sessions');
+  return response.json();
+}
+
+export async function createChatSession(projectId: string, name = 'New Chat'): Promise<ChatSession> {
+  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/chat-sessions`, {
+    method: 'POST',
+    headers: { ...await getAuthHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+  if (!response.ok) throw new Error('Failed to create chat session');
+  return response.json();
+}
+
+export async function updateChatSession(
+  sessionId: number,
+  data: { name?: string; messages?: object[] }
+): Promise<ChatSession> {
+  const response = await fetch(`${API_BASE_URL}/chat-sessions/${sessionId}`, {
+    method: 'PATCH',
+    headers: { ...await getAuthHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error('Failed to update chat session');
+  return response.json();
+}
+
+export async function deleteChatSession(sessionId: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/chat-sessions/${sessionId}`, {
+    method: 'DELETE',
+    headers: await getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error('Failed to delete chat session');
+}
+
 // Gap analysis
-export async function runGapAnalysis(projectId: string, focus?: string): Promise<import('@/types').GapAnalysis> {
+export async function runGapAnalysis(projectId: string, focus?: string): Promise<GapAnalysis> {
   const response = await fetch(`${API_BASE_URL}/projects/${projectId}/gap-analysis`, {
     method: 'POST',
     headers: { ...await getAuthHeaders(), 'Content-Type': 'application/json' },
