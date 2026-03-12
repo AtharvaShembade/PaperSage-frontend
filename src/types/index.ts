@@ -85,6 +85,24 @@ export interface Annotation {
   created_at: string;
 }
 
+export interface GapEntry {
+  claim: string;
+  evidence: string;
+  paper_title: string;
+  paper_year?: number;
+}
+
+export interface GapSection {
+  type: string;
+  title: string;
+  entries: GapEntry[];
+}
+
+export interface GapAnalysis {
+  sections: GapSection[];
+  focus?: string;
+}
+
 export interface AuthState {
   isAuthenticated: boolean;
   user: User | null;

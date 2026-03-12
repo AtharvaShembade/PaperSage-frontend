@@ -189,6 +189,17 @@ export async function litReviewGenerate(projectId: string, question: string): Pr
   return response.json();
 }
 
+// Gap analysis
+export async function runGapAnalysis(projectId: string, focus?: string): Promise<import('@/types').GapAnalysis> {
+  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/gap-analysis`, {
+    method: 'POST',
+    headers: { ...await getAuthHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ focus: focus || null }),
+  });
+  if (!response.ok) throw new Error('Failed to run gap analysis');
+  return response.json();
+}
+
 // Remove paper from project
 export async function removePaperFromProject(projectId: string, paperId: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/papers/projects/${projectId}/papers/${paperId}`, {

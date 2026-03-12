@@ -8,8 +8,9 @@ import { PapersTab } from '@/components/workspace/PapersTab';
 import { ChatTab } from '@/components/workspace/ChatTab';
 import { GraphTab } from '@/components/workspace/GraphTab';
 import { AnnotationsTab } from '@/components/workspace/AnnotationsTab';
+import { GapsTab } from '@/components/workspace/GapsTab';
 import { LitReviewDialog } from '@/components/workspace/LitReviewDialog';
-import { ArrowLeft, Search, MessageSquare, TableProperties, Bookmark, BookOpen, Loader2 } from 'lucide-react';
+import { ArrowLeft, Search, MessageSquare, TableProperties, Bookmark, BookOpen, GitBranch, Loader2 } from 'lucide-react';
 
 export default function Workspace() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -17,6 +18,14 @@ export default function Workspace() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('papers');
   const [litReviewOpen, setLitReviewOpen] = useState(false);
+  const [pendingChatQuery, setPendingChatQuery] = useState<string | null>(null);
+
+  const handleExploreInChat = (claim: string) => {
+    setPendingChatQuery(
+      `Based on the papers in this project, explain this gap and what it would take to address it: ${claim}`
+    );
+    setActiveTab('chat');
+  };
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -114,6 +123,13 @@ export default function Workspace() {
               Compare Papers
             </TabsTrigger>
             <TabsTrigger
+              value="gaps"
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
+            >
+              <GitBranch className="w-4 h-4" />
+              Research Gaps
+            </TabsTrigger>
+            <TabsTrigger
               value="notes"
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
             >
@@ -127,11 +143,24 @@ export default function Workspace() {
           </TabsContent>
 
           <TabsContent value="chat" className="mt-0" forceMount hidden={activeTab !== 'chat'}>
-            <ChatTab projectId={projectId!} isActive={activeTab === 'chat'} />
+            <ChatTab
+              projectId={projectId!}
+              isActive={activeTab === 'chat'}
+              pendingQuery={pendingChatQuery}
+              onPendingQueryConsumed={() => setPendingChatQuery(null)}
+            />
           </TabsContent>
 
           <TabsContent value="graph" className="mt-0" forceMount hidden={activeTab !== 'graph'}>
             <GraphTab projectId={projectId!} />
+          </TabsContent>
+
+          <TabsContent value="gaps" className="mt-0" forceMount hidden={activeTab !== 'gaps'}>
+            <GapsTab
+              projectId={projectId!}
+              isActive={activeTab === 'gaps'}
+              onExploreInChat={handleExploreInChat}
+            />
           </TabsContent>
 
           <TabsContent value="notes" className="mt-0" forceMount hidden={activeTab !== 'notes'}>

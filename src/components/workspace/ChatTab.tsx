@@ -9,6 +9,8 @@ import ReactMarkdown from 'react-markdown';
 interface ChatTabProps {
   projectId: string;
   isActive?: boolean;
+  pendingQuery?: string | null;
+  onPendingQueryConsumed?: () => void;
 }
 
 function SourceList({ sources, projectId }: { sources: ChatSource[]; projectId: string }) {
@@ -97,7 +99,7 @@ const WELCOME_MESSAGE: ChatMessage = {
   timestamp: new Date().toISOString()
 };
 
-export function ChatTab({ projectId, isActive }: ChatTabProps) {
+export function ChatTab({ projectId, isActive, pendingQuery, onPendingQueryConsumed }: ChatTabProps) {
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY(projectId));
@@ -127,6 +129,13 @@ export function ChatTab({ projectId, isActive }: ChatTabProps) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
     }
   }, [isActive]);
+
+  useEffect(() => {
+    if (pendingQuery && isActive) {
+      handleSend(pendingQuery);
+      onPendingQueryConsumed?.();
+    }
+  }, [pendingQuery, isActive]);
 
   const handleScroll = () => {
     const el = scrollContainerRef.current;
