@@ -167,9 +167,9 @@ export function PapersTab({ projectId }: PapersTabProps) {
   const getStatusIcon = (status: Paper['status']) => {
     switch (status) {
       case 'ready':
-        return <CheckCircle className="w-4 h-4 text-emerald" />;
+        return <CheckCircle className="w-4 h-4 text-sky-400" />;
       case 'processing':
-        return <Loader2 className="w-4 h-4 text-cyan animate-spin" />;
+        return <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />;
       default:
         return <Clock className="w-4 h-4 text-muted-foreground" />;
     }
@@ -245,7 +245,7 @@ export function PapersTab({ projectId }: PapersTabProps) {
                   <p className="text-sm text-muted-foreground line-clamp-2">{result.abstract}</p>
                   <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
                     {result.citations != null && <span>{result.citations.toLocaleString()} citations</span>}
-                    <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded-full">PDF Available</span>
+                    <span className="px-2 py-0.5 bg-sky-500/20 text-sky-400 rounded-full">PDF Available</span>
                   </div>
                 </div>
                 <Button 
@@ -299,12 +299,12 @@ export function PapersTab({ projectId }: PapersTabProps) {
                     <div className="flex items-center gap-2 mt-2">
                       <span className={`text-xs px-2 py-0.5 rounded-full ${
                         paper.status === 'ready'
-                          ? 'bg-emerald-500/20 text-emerald-400'
+                          ? 'bg-sky-500/20 text-sky-400'
                           : paper.status === 'processing'
-                            ? 'bg-cyan-500/20 text-cyan-400'
+                            ? 'bg-blue-500/20 text-blue-400'
                             : paper.status === 'no_pdf'
-                              ? 'bg-amber-500/20 text-amber-400'
-                              : 'bg-red-500/20 text-red-400'
+                              ? 'bg-slate-500/20 text-slate-400'
+                              : 'bg-rose-500/20 text-rose-400'
                       }`}>
                         {paper.status === 'processing' ? 'Processing...'
                           : paper.status === 'ready' ? '✓ Ready for RAG'
@@ -407,14 +407,14 @@ export function PapersTab({ projectId }: PapersTabProps) {
                 className="w-full flex items-center justify-between text-sm px-2 py-1.5 rounded hover:bg-muted/50 transition-colors text-foreground"
               >
                 <span>APA</span>
-                {copiedFormat === `apa-${paper.id}` ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <span className="text-xs text-muted-foreground">Copy</span>}
+                {copiedFormat === `apa-${paper.id}` ? <Check className="w-3.5 h-3.5 text-sky-400" /> : <span className="text-xs text-muted-foreground">Copy</span>}
               </button>
               <button
                 onClick={() => handleCopy(buildBibTeX(paper), `bib-${paper.id}`)}
                 className="w-full flex items-center justify-between text-sm px-2 py-1.5 rounded hover:bg-muted/50 transition-colors text-foreground"
               >
                 <span>BibTeX</span>
-                {copiedFormat === `bib-${paper.id}` ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <span className="text-xs text-muted-foreground">Copy</span>}
+                {copiedFormat === `bib-${paper.id}` ? <Check className="w-3.5 h-3.5 text-sky-400" /> : <span className="text-xs text-muted-foreground">Copy</span>}
               </button>
             </div>
           </div>,
