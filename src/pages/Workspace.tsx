@@ -100,38 +100,38 @@ export default function Workspace() {
       {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
-          <TabsList className="glass mb-6 p-1">
-            <TabsTrigger 
-              value="papers" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
+          <TabsList className="flex justify-center bg-transparent border-0 border-b border-border rounded-none mb-6 p-0 h-auto gap-0">
+            <TabsTrigger
+              value="papers"
+              className="gap-2 px-5 py-3 rounded-none bg-transparent border-0 border-b-2 border-transparent text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:text-foreground transition-colors"
             >
               <Search className="w-4 h-4" />
               Papers & Search
             </TabsTrigger>
-            <TabsTrigger 
-              value="chat" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
+            <TabsTrigger
+              value="chat"
+              className="gap-2 px-5 py-3 rounded-none bg-transparent border-0 border-b-2 border-transparent text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:text-foreground transition-colors"
             >
               <MessageSquare className="w-4 h-4" />
               RAG Chat
             </TabsTrigger>
             <TabsTrigger
               value="graph"
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
+              className="gap-2 px-5 py-3 rounded-none bg-transparent border-0 border-b-2 border-transparent text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:text-foreground transition-colors"
             >
               <TableProperties className="w-4 h-4" />
               Compare Papers
             </TabsTrigger>
             <TabsTrigger
               value="gaps"
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
+              className="gap-2 px-5 py-3 rounded-none bg-transparent border-0 border-b-2 border-transparent text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:text-foreground transition-colors"
             >
               <GitBranch className="w-4 h-4" />
               Research Gaps
             </TabsTrigger>
             <TabsTrigger
               value="notes"
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
+              className="gap-2 px-5 py-3 rounded-none bg-transparent border-0 border-b-2 border-transparent text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:text-foreground transition-colors"
             >
               <Bookmark className="w-4 h-4" />
               Notes
