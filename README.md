@@ -1,6 +1,10 @@
 # PaperSage — Frontend
 
-React + TypeScript frontend for PaperSage. Requires the backend to be running locally.
+React frontend for PaperSage, an agentic RAG research assistant for academics.
+
+## Live App
+
+https://papersage-research.vercel.app
 
 ## Tech Stack
 
@@ -8,14 +12,24 @@ React + TypeScript frontend for PaperSage. Requires the backend to be running lo
 - TailwindCSS, shadcn/ui
 - Supabase (auth)
 
-## Setup
+## Local Development
 
 ```bash
 npm install
 npm run dev
 ```
 
-Runs on `http://localhost:5173`. Expects the backend at `http://localhost:8000`.
+Runs on `http://localhost:5173`.
+
+## Environment Variables
+
+Create a `.env` file in the root:
+
+```
+VITE_API_BASE_URL=http://localhost:8000/api/v1
+```
+
+For production, set `VITE_API_BASE_URL` to the deployed backend URL in Vercel environment settings.
 
 ## Commands
 
@@ -24,9 +38,3 @@ npm run dev      # development server
 npm run build    # production build
 npm run lint     # lint
 ```
-
-## Notes
-
-- Auth is handled by Supabase — configure your Supabase project credentials in `src/lib/supabase.ts`
-- All API calls are in `src/services/api.ts`
-- The backend URL is hardcoded to `http://localhost:8000/api/v1` — update this for deployment
