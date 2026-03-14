@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ChatMessage, ChatSession, ChatSource } from '@/types';
 import { sendChatMessage, pinAnnotation, fetchChatSessions, createChatSession, updateChatSession, deleteChatSession } from '@/services/api';
-import { Send, Bot, User, Loader2, BookOpen, ChevronDown, ChevronUp, Bookmark, BookmarkCheck, Plus, Trash2 } from 'lucide-react';
+import { Send, Loader2, BookOpen, ChevronDown, ChevronUp, Bookmark, BookmarkCheck, Plus, Trash2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 interface ChatTabProps {
@@ -348,39 +348,25 @@ export function ChatTab({ projectId, isActive, pendingQuery, onPendingQueryConsu
             {messages.map((message, index) => (
               <div key={message.id}>
                 <div
-                  className={`flex gap-3 animate-fade-in ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  className={`flex animate-fade-in ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   style={{ animationDelay: `${index * 0.05}s` }}
                 >
-                  {message.role === 'assistant' && (
-                    <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                      <Bot className="w-4 h-4 text-primary" />
-                    </div>
-                  )}
-                  <div className={`max-w-[80%] ${
-                    message.role === 'user'
-                      ? 'bg-primary text-primary-foreground rounded-2xl rounded-br-md'
-                      : 'glass rounded-2xl rounded-bl-md'
-                  } px-4 py-3`}>
-                    {message.role === 'user' ? (
-                      <p className="text-primary-foreground">{message.content}</p>
-                    ) : (
+                  {message.role === 'user' ? (
+                    <p className="max-w-[72%] text-sm text-foreground/80">{message.content}</p>
+                  ) : (
+                    <div className="max-w-[85%] border-l-2 border-primary pl-4 py-1">
                       <div className="prose prose-sm prose-invert max-w-none text-foreground [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:my-0.5 [&_strong]:text-foreground [&_p]:mb-2 last:[&_p]:mb-0">
                         <ReactMarkdown>{message.content}</ReactMarkdown>
                       </div>
-                    )}
-                    {message.sources && message.sources.length > 0 && (
-                      <SourceList sources={message.sources} projectId={projectId} />
-                    )}
-                  </div>
-                  {message.role === 'user' && (
-                    <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
-                      <User className="w-4 h-4 text-primary-foreground" />
+                      {message.sources && message.sources.length > 0 && (
+                        <SourceList sources={message.sources} projectId={projectId} />
+                      )}
                     </div>
                   )}
                 </div>
 
                 {message.role === 'assistant' && message.id !== '1' && (
-                  <div className="ml-11 mt-2 flex flex-col gap-2">
+                  <div className="ml-6 mt-2 flex flex-col gap-2">
                     {message.follow_ups && message.follow_ups.length > 0 && (
                       <div className="flex flex-wrap gap-1.5">
                         {message.follow_ups.map((q, i) => (
@@ -413,13 +399,10 @@ export function ChatTab({ projectId, isActive, pendingQuery, onPendingQueryConsu
             ))}
 
             {isLoading && (
-              <div className="flex gap-3 items-center animate-fade-in">
-                <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
-                  <Bot className="w-4 h-4 text-primary" />
-                </div>
-                <div className="glass rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-2">
+              <div className="flex animate-fade-in">
+                <div className="border-l-2 border-primary pl-4 py-1 flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                  <span className="text-muted-foreground">Thinking...</span>
+                  <span className="text-sm text-muted-foreground">Thinking...</span>
                 </div>
               </div>
             )}
