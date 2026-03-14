@@ -7,13 +7,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PapersTab } from '@/components/workspace/PapersTab';
 import { ChatTab } from '@/components/workspace/ChatTab';
 import { GraphTab } from '@/components/workspace/GraphTab';
-import { ArrowLeft, Search, MessageSquare, TableProperties, Loader2 } from 'lucide-react';
+import { AnnotationsTab } from '@/components/workspace/AnnotationsTab';
+import { GapsTab } from '@/components/workspace/GapsTab';
+import { LitReviewDialog } from '@/components/workspace/LitReviewDialog';
+import { ArrowLeft, Search, MessageSquare, TableProperties, Bookmark, BookOpen, GitBranch, Loader2 } from 'lucide-react';
 
 export default function Workspace() {
   const { projectId } = useParams<{ projectId: string }>();
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('papers');
+  const [litReviewOpen, setLitReviewOpen] = useState(false);
+  const [pendingChatQuery, setPendingChatQuery] = useState<string | null>(null);
+
+  const handleExploreInChat = (claim: string) => {
+    setPendingChatQuery(
+      `Based on the papers in this project, explain this gap and what it would take to address it: ${claim}`
+    );
+    setActiveTab('chat');
+  };
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -68,33 +80,61 @@ export default function Workspace() {
               <p className="text-sm text-muted-foreground">{project.papers?.length ?? 0} papers</p>
             </div>
           </div>
+
+          <div className="ml-auto">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 text-primary border-primary/30 hover:bg-primary/10"
+              onClick={() => setLitReviewOpen(true)}
+            >
+              <BookOpen className="w-4 h-4" />
+              Literature Review
+            </Button>
+          </div>
         </div>
       </header>
+
+      <LitReviewDialog projectId={projectId!} open={litReviewOpen} onOpenChange={setLitReviewOpen} />
 
       {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
-          <TabsList className="glass mb-6 p-1">
-            <TabsTrigger 
-              value="papers" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
+          <TabsList className="flex justify-center bg-transparent border-0 border-b border-border rounded-none mb-6 p-0 h-auto gap-0">
+            <TabsTrigger
+              value="papers"
+              className="gap-2 px-5 py-3 rounded-none bg-transparent border-0 border-b-2 border-transparent text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:text-foreground transition-colors"
             >
               <Search className="w-4 h-4" />
               Papers & Search
             </TabsTrigger>
-            <TabsTrigger 
-              value="chat" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
+            <TabsTrigger
+              value="chat"
+              className="gap-2 px-5 py-3 rounded-none bg-transparent border-0 border-b-2 border-transparent text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:text-foreground transition-colors"
             >
               <MessageSquare className="w-4 h-4" />
               RAG Chat
             </TabsTrigger>
             <TabsTrigger
               value="graph"
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-2"
+              className="gap-2 px-5 py-3 rounded-none bg-transparent border-0 border-b-2 border-transparent text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:text-foreground transition-colors"
             >
               <TableProperties className="w-4 h-4" />
               Compare Papers
+            </TabsTrigger>
+            <TabsTrigger
+              value="gaps"
+              className="gap-2 px-5 py-3 rounded-none bg-transparent border-0 border-b-2 border-transparent text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:text-foreground transition-colors"
+            >
+              <GitBranch className="w-4 h-4" />
+              Research Gaps
+            </TabsTrigger>
+            <TabsTrigger
+              value="notes"
+              className="gap-2 px-5 py-3 rounded-none bg-transparent border-0 border-b-2 border-transparent text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:text-foreground transition-colors"
+            >
+              <Bookmark className="w-4 h-4" />
+              Notes
             </TabsTrigger>
           </TabsList>
 
@@ -103,11 +143,28 @@ export default function Workspace() {
           </TabsContent>
 
           <TabsContent value="chat" className="mt-0" forceMount hidden={activeTab !== 'chat'}>
-            <ChatTab projectId={projectId!} isActive={activeTab === 'chat'} />
+            <ChatTab
+              projectId={projectId!}
+              isActive={activeTab === 'chat'}
+              pendingQuery={pendingChatQuery}
+              onPendingQueryConsumed={() => setPendingChatQuery(null)}
+            />
           </TabsContent>
 
           <TabsContent value="graph" className="mt-0" forceMount hidden={activeTab !== 'graph'}>
             <GraphTab projectId={projectId!} />
+          </TabsContent>
+
+          <TabsContent value="gaps" className="mt-0" forceMount hidden={activeTab !== 'gaps'}>
+            <GapsTab
+              projectId={projectId!}
+              isActive={activeTab === 'gaps'}
+              onExploreInChat={handleExploreInChat}
+            />
+          </TabsContent>
+
+          <TabsContent value="notes" className="mt-0" forceMount hidden={activeTab !== 'notes'}>
+            <AnnotationsTab projectId={projectId!} isActive={activeTab === 'notes'} />
           </TabsContent>
         </Tabs>
       </main>

@@ -131,7 +131,7 @@ export function GraphTab({ projectId }: GraphTabProps) {
 
         {/* Skipped papers notice */}
         {hasLoaded && skipped.length > 0 && (
-          <div className="mb-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm">
+          <div className="mb-4 p-3 rounded-lg bg-slate-500/10 border border-slate-500/20 text-slate-400 text-sm">
             Skipped {skipped.length} paper{skipped.length > 1 ? 's' : ''} (not yet ready): {skipped.join(', ')}
           </div>
         )}

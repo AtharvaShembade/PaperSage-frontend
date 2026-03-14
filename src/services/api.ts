@@ -1,4 +1,4 @@
-import { Project, Paper, SearchResult, ChatMessage, ChatSource, CitationNode, CitationEdge, ComparisonResponse } from '@/types';
+import { Project, Paper, SearchResult, ChatMessage, ChatSource, CitationNode, CitationEdge, ComparisonResponse, Annotation, ChatSession, GapAnalysis } from '@/types';
 import { supabase } from '@/lib/supabase';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api/v1';
@@ -85,6 +85,15 @@ export async function sendChatMessage(projectId: string, message: string, deep =
   };
 }
 
+// Discover related papers for a project
+export async function fetchRelatedPapers(projectId: string): Promise<SearchResult[]> {
+  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/discover`, {
+    headers: await getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error('Failed to fetch related papers');
+  return response.json();
+}
+
 // Search papers (Semantic Scholar)
 export async function searchPapers(query: string): Promise<SearchResult[]> {
   const response = await fetch(`${API_BASE_URL}/search/?q=${encodeURIComponent(query)}&limit=20`, {
@@ -119,6 +128,115 @@ export async function fetchComparisonTable(projectId: string): Promise<Compariso
     headers: await getAuthHeaders(),
   });
   if (!response.ok) throw new Error('Failed to fetch comparison table');
+  return response.json();
+}
+
+// Annotations
+export async function fetchAnnotations(projectId: string): Promise<Annotation[]> {
+  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/annotations`, {
+    headers: await getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error('Failed to fetch annotations');
+  return response.json();
+}
+
+export async function pinAnnotation(projectId: string, paperTitle: string, chunkText: string): Promise<Annotation> {
+  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/annotations`, {
+    method: 'POST',
+    headers: await getAuthHeaders(),
+    body: JSON.stringify({ paper_title: paperTitle, chunk_text: chunkText }),
+  });
+  if (!response.ok) throw new Error('Failed to pin annotation');
+  return response.json();
+}
+
+export async function updateAnnotation(annotationId: number, userNote: string): Promise<Annotation> {
+  const response = await fetch(`${API_BASE_URL}/annotations/${annotationId}`, {
+    method: 'PATCH',
+    headers: await getAuthHeaders(),
+    body: JSON.stringify({ user_note: userNote }),
+  });
+  if (!response.ok) throw new Error('Failed to update annotation');
+  return response.json();
+}
+
+export async function deleteAnnotation(annotationId: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/annotations/${annotationId}`, {
+    method: 'DELETE',
+    headers: await getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error('Failed to delete annotation');
+}
+
+// Literature Review
+export async function litReviewSearch(projectId: string, question: string): Promise<{ paper_ids: number[]; message: string }> {
+  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/lit-review/search`, {
+    method: 'POST',
+    headers: await getAuthHeaders(),
+    body: JSON.stringify({ question }),
+  });
+  if (!response.ok) throw new Error('Failed to search papers for review');
+  return response.json();
+}
+
+export async function litReviewGenerate(projectId: string, question: string): Promise<{ review: string }> {
+  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/lit-review/generate`, {
+    method: 'POST',
+    headers: await getAuthHeaders(),
+    body: JSON.stringify({ question }),
+  });
+  if (!response.ok) throw new Error('Failed to generate literature review');
+  return response.json();
+}
+
+// Chat sessions
+export async function fetchChatSessions(projectId: string): Promise<ChatSession[]> {
+  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/chat-sessions`, {
+    headers: await getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error('Failed to fetch chat sessions');
+  return response.json();
+}
+
+export async function createChatSession(projectId: string, name = 'New Chat'): Promise<ChatSession> {
+  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/chat-sessions`, {
+    method: 'POST',
+    headers: { ...await getAuthHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+  if (!response.ok) throw new Error('Failed to create chat session');
+  return response.json();
+}
+
+export async function updateChatSession(
+  sessionId: number,
+  data: { name?: string; messages?: object[] }
+): Promise<ChatSession> {
+  const response = await fetch(`${API_BASE_URL}/chat-sessions/${sessionId}`, {
+    method: 'PATCH',
+    headers: { ...await getAuthHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error('Failed to update chat session');
+  return response.json();
+}
+
+export async function deleteChatSession(sessionId: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/chat-sessions/${sessionId}`, {
+    method: 'DELETE',
+    headers: await getAuthHeaders(),
+  });
+  if (!response.ok) throw new Error('Failed to delete chat session');
+}
+
+// Gap analysis
+export async function runGapAnalysis(projectId: string, focus?: string): Promise<GapAnalysis> {
+  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/gap-analysis`, {
+    method: 'POST',
+    headers: { ...await getAuthHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ focus: focus || null }),
+  });
+  if (!response.ok) throw new Error('Failed to run gap analysis');
   return response.json();
 }
 

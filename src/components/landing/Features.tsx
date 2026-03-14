@@ -1,42 +1,36 @@
-import { Search, GitBranch, MessageSquare, Zap, Shield, Globe } from 'lucide-react';
+import { MessageSquare, GitBranch, BookOpen, TableProperties, Search, Bookmark } from 'lucide-react';
 
 const features = [
   {
-    icon: Search,
-    title: 'Smart Search',
-    description: 'Find relevant papers instantly with AI-powered semantic search across millions of academic publications.',
-    gradient: 'from-primary to-primary/50'
+    icon: MessageSquare,
+    title: 'Agentic RAG Chat',
+    description: 'Ask anything about your papers. The AI agent retrieves relevant passages on its own, answers with citations, and suggests follow-up questions.',
   },
   {
     icon: GitBranch,
-    title: 'Citation Analysis',
-    description: 'Visualize citation networks and discover influential papers with interactive knowledge graphs.',
-    gradient: 'from-cyan to-cyan/50'
+    title: 'Research Gaps',
+    description: 'Scan all your papers for open problems, contradictions, methodological gaps, and future directions. Grounded in verbatim evidence.',
   },
   {
-    icon: MessageSquare,
-    title: 'RAG Chat',
-    description: 'Ask questions about your research papers and get accurate, cited answers from your document collection.',
-    gradient: 'from-emerald to-emerald/50'
+    icon: BookOpen,
+    title: 'Literature Review',
+    description: 'Type a research question and get a structured review: background, key approaches, gaps, and future work. Generated from real papers.',
   },
   {
-    icon: Zap,
-    title: 'Lightning Fast',
-    description: 'Process and analyze papers in seconds with our optimized AI pipeline and vector search.',
-    gradient: 'from-primary to-cyan'
+    icon: TableProperties,
+    title: 'Paper Comparison',
+    description: 'Side-by-side table of problem, method, dataset, result, and limitations across all your papers.',
   },
   {
-    icon: Shield,
-    title: 'Secure & Private',
-    description: 'Your research data is encrypted and never shared. Full control over your intellectual property.',
-    gradient: 'from-cyan to-emerald'
+    icon: Search,
+    title: 'Related Papers',
+    description: 'AI reads your existing papers and discovers related work on arXiv. No manual searching required.',
   },
   {
-    icon: Globe,
-    title: 'Multi-Language',
-    description: 'Support for papers in 40+ languages with automatic translation and cross-lingual search.',
-    gradient: 'from-emerald to-primary'
-  }
+    icon: Bookmark,
+    title: 'Notes & Annotations',
+    description: 'Pin source chunks from chat directly to your notes. Add your own commentary per highlight.',
+  },
 ];
 
 export function Features() {
@@ -48,7 +42,7 @@ export function Features() {
             <span className="text-foreground">Powerful Features</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Everything you need to accelerate your research workflow
+            Everything a researcher needs, without reading every page
           </p>
         </div>
 
