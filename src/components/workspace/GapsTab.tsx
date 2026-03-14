@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { GapAnalysis, GapEntry, GapSection } from '@/types';
 import { runGapAnalysis } from '@/services/api';
-import { Loader2, ChevronDown, ChevronUp, ArrowRight, BookmarkCheck, Bookmark } from 'lucide-react';
+import { Loader2, ChevronDown, ChevronUp, ArrowRight, BookmarkCheck, Bookmark, GitBranch } from 'lucide-react';
 import { pinAnnotation } from '@/services/api';
 
 interface GapsTabProps {
@@ -251,9 +251,15 @@ export function GapsTab({ projectId, isActive, onExploreInChat }: GapsTabProps) 
 
       {/* Empty state */}
       {!analysis && !isLoading && (
-        <div className="text-center py-16 text-muted-foreground">
-          <p className="text-sm">Analyze your papers to surface research gaps.</p>
-          <p className="text-xs mt-1 opacity-60">All ready papers will be scanned.</p>
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <GitBranch className="w-10 h-10 text-muted-foreground mb-4" />
+          <p className="text-foreground font-medium mb-1">No gap analysis yet</p>
+          <p className="text-sm text-muted-foreground mb-6 max-w-sm">
+            Scans all ready papers for open problems, contradictions, and future directions.
+          </p>
+          <Button onClick={handleAnalyze} disabled={isLoading}>
+            Run Analysis
+          </Button>
         </div>
       )}
     </div>

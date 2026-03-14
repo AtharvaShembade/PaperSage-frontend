@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Paper, SearchResult } from '@/types';
 import { searchPapers, fetchProjectPapers, addPaperToProject, removePaperFromProject, fetchRelatedPapers } from '@/services/api';
-import { Search, Plus, FileText, Loader2, CheckCircle, Clock, Trash2, ChevronDown, ChevronUp, Quote, Check } from 'lucide-react';
+import { Search, Plus, FileText, Loader2, Trash2, Quote, Check } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -17,7 +17,6 @@ interface PapersTabProps {
 }
 
 export function PapersTab({ projectId }: PapersTabProps) {
-  const [expandedTldr, setExpandedTldr] = useState<number | string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -164,14 +163,31 @@ export function PapersTab({ projectId }: PapersTabProps) {
     }
   };
 
-  const getStatusIcon = (status: Paper['status']) => {
+  const statusDot = (status: Paper['status']) => {
+    const base = 'w-2 h-2 rounded-full shrink-0 mt-1.5';
     switch (status) {
-      case 'ready':
-        return <CheckCircle className="w-4 h-4 text-sky-400" />;
-      case 'processing':
-        return <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />;
-      default:
-        return <Clock className="w-4 h-4 text-muted-foreground" />;
+      case 'ready':       return <span className={`${base} bg-sky-400`} />;
+      case 'processing':  return <span className={`${base} bg-blue-400 animate-pulse`} />;
+      case 'no_pdf':      return <span className={`${base} bg-slate-500`} />;
+      default:            return <span className={`${base} bg-rose-500`} />;
+    }
+  };
+
+  const statusBorderClass = (status: Paper['status']) => {
+    switch (status) {
+      case 'ready':      return 'border-l-2 border-sky-500/60';
+      case 'processing': return 'border-l-2 border-blue-500/60';
+      case 'no_pdf':     return 'border-l-2 border-slate-500/60';
+      default:           return 'border-l-2 border-rose-500/60';
+    }
+  };
+
+  const statusLabel = (status: Paper['status']) => {
+    switch (status) {
+      case 'ready':      return 'ready';
+      case 'processing': return 'processing…';
+      case 'no_pdf':     return 'no pdf';
+      default:           return 'error';
     }
   };
 
@@ -282,46 +298,22 @@ export function PapersTab({ projectId }: PapersTabProps) {
             </div>
           ) : (
             papers.map((paper, index) => (
-              <div 
-                key={paper.id} 
-                className="glass p-4 rounded-lg animate-fade-in"
+              <div
+                key={paper.id}
+                className={`glass pl-3 pr-4 py-3 rounded-lg animate-fade-in ${statusBorderClass(paper.status)}`}
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
                 <div className="flex items-start gap-3">
-                  <div className="mt-1">
-                    {getStatusIcon(paper.status)}
-                  </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-foreground line-clamp-1">{paper.title}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {(paper.authors || []).slice(0, 2).join(', ')} • {paper.year}
-                    </p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${
-                        paper.status === 'ready'
-                          ? 'bg-sky-500/20 text-sky-400'
-                          : paper.status === 'processing'
-                            ? 'bg-blue-500/20 text-blue-400'
-                            : paper.status === 'no_pdf'
-                              ? 'bg-slate-500/20 text-slate-400'
-                              : 'bg-rose-500/20 text-rose-400'
-                      }`}>
-                        {paper.status === 'processing' ? 'Processing...'
-                          : paper.status === 'ready' ? '✓ Ready for RAG'
-                          : paper.status === 'no_pdf' ? 'No PDF (metadata only)'
-                          : 'Error'}
-                      </span>
-                      {paper.tldr && (
-                        <button
-                          onClick={() => setExpandedTldr(expandedTldr === paper.id ? null : paper.id)}
-                          className="text-xs text-muted-foreground hover:text-primary flex items-center gap-0.5 transition-colors"
-                        >
-                          TLDR {expandedTldr === paper.id ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                        </button>
-                      )}
+                    <div className="flex items-start gap-2">
+                      {statusDot(paper.status)}
+                      <h3 className="font-medium text-foreground line-clamp-2 leading-snug">{paper.title}</h3>
                     </div>
-                    {expandedTldr === paper.id && paper.tldr && (
-                      <p className="mt-2 text-xs text-muted-foreground leading-relaxed border-t border-border/40 pt-2">
+                    <p className="text-xs text-muted-foreground mt-1 ml-4">
+                      {(paper.authors || []).slice(0, 2).join(', ')}{paper.year ? ` · ${paper.year}` : ''} · {statusLabel(paper.status)}
+                    </p>
+                    {paper.tldr && (
+                      <p className="mt-1.5 ml-4 text-xs text-muted-foreground leading-relaxed">
                         {paper.tldr}
                       </p>
                     )}
