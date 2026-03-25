@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ChatMessage, ChatSession, ChatSource } from '@/types';
-import { sendChatMessage, pinAnnotation, fetchChatSessions, createChatSession, updateChatSession, deleteChatSession } from '@/services/api';
+import { streamChatMessage, pinAnnotation, fetchChatSessions, createChatSession, updateChatSession, deleteChatSession } from '@/services/api';
 import { Send, Loader2, BookOpen, ChevronDown, ChevronUp, Bookmark, BookmarkCheck, Plus, Trash2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
@@ -115,6 +115,7 @@ export function ChatTab({ projectId, isActive, pendingQuery, onPendingQueryConsu
   const [sessionsLoading, setSessionsLoading] = useState(true);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingStatus, setLoadingStatus] = useState<'searching' | 'generating'>('searching');
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [hoveredSessionId, setHoveredSessionId] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -220,23 +221,78 @@ export function ChatTab({ projectId, isActive, pendingQuery, onPendingQueryConsu
     const newName = isFirstUserMsg ? content.slice(0, 30) : activeSession.name;
     const messagesWithUser = [...currentMessages.filter(m => m.id !== '1'), userMessage];
 
-    // Optimistic update
     setSessions(prev => prev.map(s => s.id === currentSessionId
       ? { ...s, messages: messagesWithUser, name: newName }
       : s
     ));
     setInput('');
     setIsLoading(true);
+    setLoadingStatus('searching');
+
+    const assistantMsgId = (Date.now() + 1).toString();
+    let streamStarted = false;
 
     try {
-      const response = await sendChatMessage(projectId, content, deep);
-      const finalMessages = [...messagesWithUser, response];
-      setSessions(prev => prev.map(s => s.id === currentSessionId
-        ? { ...s, messages: finalMessages }
-        : s
-      ));
-      // Persist to DB
-      await updateChatSession(currentSessionId, { messages: finalMessages as object[], name: newName });
+      const response = await streamChatMessage(projectId, content, deep);
+      const reader = response.body!.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let finalSources: ChatSource[] = [];
+      let finalFollowUps: string[] = [];
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() ?? '';
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          let event: any;
+          try { event = JSON.parse(line.slice(6)); } catch { continue; }
+
+          if (event.type === 'status') {
+            setLoadingStatus(event.content);
+          } else if (event.type === 'token') {
+            if (!streamStarted) {
+              // First token — add placeholder message and hide spinner
+              streamStarted = true;
+              setIsLoading(false);
+              setSessions(prev => prev.map(s => s.id === currentSessionId
+                ? { ...s, messages: [...s.messages, { id: assistantMsgId, role: 'assistant' as const, content: event.content, timestamp: new Date().toISOString() }] }
+                : s
+              ));
+            } else {
+              setSessions(prev => prev.map(s => s.id === currentSessionId
+                ? { ...s, messages: s.messages.map(m => m.id === assistantMsgId ? { ...m, content: m.content + event.content } : m) }
+                : s
+              ));
+            }
+          } else if (event.type === 'done') {
+            finalSources = event.sources ?? [];
+            finalFollowUps = event.follow_ups ?? [];
+          } else if (event.type === 'error') {
+            throw new Error(event.detail);
+          }
+        }
+      }
+
+      // Attach sources + follow_ups, then persist
+      setSessions(prev => {
+        const updated = prev.map(s => {
+          if (s.id !== currentSessionId) return s;
+          const finalMessages = s.messages.map(m => m.id === assistantMsgId
+            ? { ...m, sources: finalSources, follow_ups: finalFollowUps }
+            : m
+          );
+          updateChatSession(currentSessionId, { messages: finalMessages as object[], name: newName }).catch(() => {});
+          return { ...s, messages: finalMessages };
+        });
+        return updated;
+      });
+
     } catch (error: any) {
       const status = error?.status;
       const errText = !status
@@ -245,9 +301,15 @@ export function ChatTab({ projectId, isActive, pendingQuery, onPendingQueryConsu
         : status === 404 ? "This project could not be found."
         : "Something went wrong on our end. Try again in a moment.";
       const errMsg: ChatMessage = { id: Date.now().toString(), role: 'assistant', content: errText, timestamp: new Date().toISOString() };
-      const finalMessages = [...messagesWithUser, errMsg];
-      setSessions(prev => prev.map(s => s.id === currentSessionId ? { ...s, messages: finalMessages } : s));
-      await updateChatSession(currentSessionId, { messages: finalMessages as object[] }).catch(() => {});
+      setSessions(prev => {
+        const updated = prev.map(s => {
+          if (s.id !== currentSessionId) return s;
+          const finalMessages = [...s.messages.filter(m => m.id !== assistantMsgId), errMsg];
+          updateChatSession(currentSessionId, { messages: finalMessages as object[] }).catch(() => {});
+          return { ...s, messages: finalMessages };
+        });
+        return updated;
+      });
     } finally {
       setIsLoading(false);
     }
@@ -402,7 +464,9 @@ export function ChatTab({ projectId, isActive, pendingQuery, onPendingQueryConsu
               <div className="flex animate-fade-in">
                 <div className="border-l-2 border-primary pl-4 py-1 flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                  <span className="text-sm text-muted-foreground">Thinking...</span>
+                  <span className="text-sm text-muted-foreground">
+                    {loadingStatus === 'searching' ? 'Searching your papers...' : 'Generating answer...'}
+                  </span>
                 </div>
               </div>
             )}

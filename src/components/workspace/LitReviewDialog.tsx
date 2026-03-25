@@ -233,6 +233,19 @@ export function LitReviewDialog({ projectId, open, onOpenChange }: LitReviewDial
           <div className="flex flex-col items-center gap-4 py-8">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
             {phaseIndicator()}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground mt-2"
+              onClick={() => {
+                if (pollRef.current) clearInterval(pollRef.current);
+                setPhase('input');
+                setPaperIds([]);
+                setReadyCount(0);
+              }}
+            >
+              Cancel
+            </Button>
           </div>
         )}
 

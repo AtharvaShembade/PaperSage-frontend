@@ -65,7 +65,18 @@ export async function addPaperToProject(
   if (!response.ok) throw new Error('Failed to add paper');
 }
 
-// Chat with RAG
+// Chat with RAG — streaming. Returns raw Response for caller to read as a stream.
+export async function streamChatMessage(projectId: string, message: string, deep = false): Promise<Response> {
+  const response = await fetch(`${API_BASE_URL}/rag/stream`, {
+    method: 'POST',
+    headers: await getAuthHeaders(),
+    body: JSON.stringify({ project_id: parseInt(projectId), query: message, deep }),
+  });
+  if (!response.ok) throw Object.assign(new Error('Failed to stream message'), { status: response.status });
+  return response;
+}
+
+// Chat with RAG (non-streaming fallback)
 export async function sendChatMessage(projectId: string, message: string, deep = false): Promise<ChatMessage> {
   const response = await fetch(`${API_BASE_URL}/rag/chat`, {
     method: 'POST',
