@@ -10,6 +10,7 @@ import { GraphTab } from '@/components/workspace/GraphTab';
 import { AnnotationsTab } from '@/components/workspace/AnnotationsTab';
 import { GapsTab } from '@/components/workspace/GapsTab';
 import { LitReviewDialog } from '@/components/workspace/LitReviewDialog';
+import { CommandPalette, PaletteCommand } from '@/components/CommandPalette';
 import { ArrowLeft, Search, MessageSquare, TableProperties, Bookmark, BookOpen, GitBranch, Loader2 } from 'lucide-react';
 
 export default function Workspace() {
@@ -19,6 +20,17 @@ export default function Workspace() {
   const [activeTab, setActiveTab] = useState('papers');
   const [litReviewOpen, setLitReviewOpen] = useState(false);
   const [pendingChatQuery, setPendingChatQuery] = useState<string | null>(null);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  const paletteCommands: PaletteCommand[] = [
+    { id: 'tab-papers',  label: 'Go to Papers & Search',  icon: <Search className="w-4 h-4" />,          group: 'Navigate', onSelect: () => setActiveTab('papers') },
+    { id: 'tab-chat',    label: 'Go to RAG Chat',          icon: <MessageSquare className="w-4 h-4" />,    group: 'Navigate', onSelect: () => setActiveTab('chat') },
+    { id: 'tab-graph',   label: 'Go to Compare Papers',    icon: <TableProperties className="w-4 h-4" />,  group: 'Navigate', onSelect: () => setActiveTab('graph') },
+    { id: 'tab-gaps',    label: 'Go to Research Gaps',     icon: <GitBranch className="w-4 h-4" />,        group: 'Navigate', onSelect: () => setActiveTab('gaps') },
+    { id: 'tab-notes',   label: 'Go to Notes',             icon: <Bookmark className="w-4 h-4" />,         group: 'Navigate', onSelect: () => setActiveTab('notes') },
+    { id: 'lit-review',  label: 'Open Literature Review',  icon: <BookOpen className="w-4 h-4" />,         group: 'Actions',  onSelect: () => setLitReviewOpen(true) },
+    { id: 'dashboard',   label: 'Back to Dashboard',       icon: <ArrowLeft className="w-4 h-4" />,        group: 'Actions',  onSelect: () => navigate('/dashboard') },
+  ];
 
   const handleExploreInChat = (claim: string) => {
     setPendingChatQuery(
@@ -81,7 +93,15 @@ export default function Workspace() {
             </div>
           </div>
 
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              onClick={() => setPaletteOpen(true)}
+              className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-muted/30 hover:bg-muted/60 transition-colors text-sm text-muted-foreground"
+            >
+              <Search className="w-3.5 h-3.5" />
+              <span>Search commands</span>
+              <kbd className="text-[10px] border border-border rounded px-1 py-0.5 ml-1">⌘K</kbd>
+            </button>
             <Button
               variant="outline"
               size="sm"
@@ -96,6 +116,7 @@ export default function Workspace() {
       </header>
 
       <LitReviewDialog projectId={projectId!} open={litReviewOpen} onOpenChange={setLitReviewOpen} />
+      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} commands={paletteCommands} />
 
       {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-6">

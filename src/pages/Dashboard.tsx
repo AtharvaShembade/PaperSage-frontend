@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchProjects, createProject, deleteProject } from '@/services/api';
 import { Project } from '@/types';
+import { CommandPalette, PaletteCommand } from '@/components/CommandPalette';
 import {
   Zap, Plus, Search, LogOut, FolderOpen, FileText,
   Calendar, Loader2, X, Trash2
@@ -29,6 +30,7 @@ export default function Dashboard() {
   const [isCreating, setIsCreating] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -82,6 +84,18 @@ export default function Dashboard() {
     logout();
     navigate('/');
   };
+
+  const paletteCommands: PaletteCommand[] = [
+    { id: 'new-project', label: 'New Project', icon: <Plus className="w-4 h-4" />, group: 'Actions', onSelect: () => setIsDialogOpen(true) },
+    { id: 'logout',      label: 'Log Out',      icon: <LogOut className="w-4 h-4" />, group: 'Actions', onSelect: handleLogout },
+    ...projects.map(p => ({
+      id: `project-${p.id}`,
+      label: p.name,
+      icon: <FolderOpen className="w-4 h-4" />,
+      group: 'Projects',
+      onSelect: () => navigate(`/workspace/${p.id}`),
+    })),
+  ];
 
   const filteredProjects = projects.filter(p => 
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -235,6 +249,8 @@ export default function Dashboard() {
           </div>
         )}
       </main>
+
+      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} commands={paletteCommands} />
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={!!projectToDelete} onOpenChange={() => setProjectToDelete(null)}>
