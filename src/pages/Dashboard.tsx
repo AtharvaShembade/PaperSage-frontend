@@ -200,8 +200,14 @@ export default function Dashboard() {
 
         {/* Projects Grid */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="glass rounded-xl p-6 animate-pulse">
+                <div className="w-12 h-12 rounded-lg bg-muted mb-4" />
+                <div className="h-4 bg-muted rounded w-3/4 mb-2" />
+                <div className="h-3 bg-muted rounded w-1/2 mt-4" />
+              </div>
+            ))}
           </div>
         ) : filteredProjects.length === 0 ? (
           <div className="text-center py-20">

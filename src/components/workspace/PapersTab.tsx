@@ -21,6 +21,7 @@ export function PapersTab({ projectId }: PapersTabProps) {
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [papers, setPapers] = useState<Paper[]>([]);
+  const [papersLoading, setPapersLoading] = useState(true);
   const [addingPapers, setAddingPapers] = useState<Set<string>>(new Set());
   const [removingPapers, setRemovingPapers] = useState<Set<string>>(new Set());
   const [paperToDelete, setPaperToDelete] = useState<Paper | null>(null);
@@ -92,8 +93,10 @@ export function PapersTab({ projectId }: PapersTabProps) {
   }, [papers, projectId]);
 
   const loadPapers = async () => {
+    setPapersLoading(true);
     const data = await fetchProjectPapers(projectId);
     setPapers(data);
+    setPapersLoading(false);
   };
 
   const handleSearch = async () => {
@@ -290,7 +293,16 @@ export function PapersTab({ projectId }: PapersTabProps) {
         </h2>
         
         <div className="space-y-3 max-h-[500px] overflow-y-auto">
-          {papers.length === 0 ? (
+          {papersLoading ? (
+            <div className="space-y-3">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="glass pl-3 pr-4 py-3 rounded-lg border-l-2 border-border animate-pulse">
+                  <div className="h-3.5 bg-muted rounded w-3/4 mb-2" />
+                  <div className="h-3 bg-muted rounded w-1/2" />
+                </div>
+              ))}
+            </div>
+          ) : papers.length === 0 ? (
             <div className="text-center py-12">
               <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
               <p className="text-muted-foreground">No papers added yet</p>

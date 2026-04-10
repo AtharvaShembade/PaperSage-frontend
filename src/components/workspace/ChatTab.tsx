@@ -115,6 +115,8 @@ export function ChatTab({ projectId, isActive, pendingQuery, onPendingQueryConsu
   const [sessionsLoading, setSessionsLoading] = useState(true);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [streamingMsgId, setStreamingMsgId] = useState<string | null>(null);
   const [loadingStatus, setLoadingStatus] = useState<'searching' | 'generating'>('searching');
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [hoveredSessionId, setHoveredSessionId] = useState<number | null>(null);
@@ -260,6 +262,8 @@ export function ChatTab({ projectId, isActive, pendingQuery, onPendingQueryConsu
               // First token — add placeholder message and hide spinner
               streamStarted = true;
               setIsLoading(false);
+              setIsStreaming(true);
+              setStreamingMsgId(assistantMsgId);
               setSessions(prev => prev.map(s => s.id === currentSessionId
                 ? { ...s, messages: [...s.messages, { id: assistantMsgId, role: 'assistant' as const, content: event.content, timestamp: new Date().toISOString() }] }
                 : s
@@ -273,6 +277,8 @@ export function ChatTab({ projectId, isActive, pendingQuery, onPendingQueryConsu
           } else if (event.type === 'done') {
             finalSources = event.sources ?? [];
             finalFollowUps = event.follow_ups ?? [];
+            setIsStreaming(false);
+            setStreamingMsgId(null);
           } else if (event.type === 'error') {
             throw new Error(event.detail);
           }
@@ -312,6 +318,8 @@ export function ChatTab({ projectId, isActive, pendingQuery, onPendingQueryConsu
       });
     } finally {
       setIsLoading(false);
+      setIsStreaming(false);
+      setStreamingMsgId(null);
     }
   };
 
@@ -331,8 +339,13 @@ export function ChatTab({ projectId, isActive, pendingQuery, onPendingQueryConsu
         </div>
         <div className="flex-1 overflow-y-auto py-2">
           {sessionsLoading ? (
-            <div className="flex justify-center pt-6">
-              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+            <div className="space-y-1 px-2 pt-2">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="rounded-lg px-3 py-2 animate-pulse">
+                  <div className="h-3 bg-muted rounded w-4/5 mb-1.5" />
+                  <div className="h-2 bg-muted rounded w-1/3" />
+                </div>
+              ))}
             </div>
           ) : sessions.map(session => (
             <div
@@ -419,6 +432,9 @@ export function ChatTab({ projectId, isActive, pendingQuery, onPendingQueryConsu
                     <div className="max-w-[85%] border-l-2 border-primary pl-4 py-1">
                       <div className="prose prose-sm prose-invert max-w-none text-foreground [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:my-0.5 [&_strong]:text-foreground [&_p]:mb-2 last:[&_p]:mb-0">
                         <ReactMarkdown>{message.content}</ReactMarkdown>
+                        {isStreaming && streamingMsgId === message.id && (
+                          <span className="inline-block w-[2px] h-[1em] bg-primary ml-0.5 align-middle animate-[blink_1s_step-end_infinite]" />
+                        )}
                       </div>
                       {message.sources && message.sources.length > 0 && (
                         <SourceList sources={message.sources} projectId={projectId} />
