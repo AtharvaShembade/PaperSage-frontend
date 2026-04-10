@@ -8,7 +8,19 @@ export function Hero() {
   return (
     <section className="relative min-h-screen flex items-center justify-center px-4">
 
+      {/* Owl watermark */}
+      <img
+        src="/owl.png"
+        alt=""
+        aria-hidden="true"
+        className="absolute top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(1300px,98vw)] h-[min(1300px,98vw)] object-contain opacity-[0.05] mix-blend-multiply pointer-events-none select-none"
+      />
+
       <div className="relative z-10 max-w-5xl mx-auto text-center">
+        <p className="text-sm tracking-[0.25em] uppercase text-muted-foreground/60 mb-4 animate-slide-up">
+          Your research, organised.
+        </p>
+
         <h1 className="text-5xl md:text-7xl font-serif font-semibold mb-6 leading-tight animate-slide-up text-foreground">
           PaperSage
         </h1>

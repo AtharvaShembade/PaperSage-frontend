@@ -24,7 +24,7 @@ export default function Workspace() {
 
   const paletteCommands: PaletteCommand[] = [
     { id: 'tab-papers',  label: 'Go to Papers & Search',  icon: <Search className="w-4 h-4" />,          group: 'Navigate', onSelect: () => setActiveTab('papers') },
-    { id: 'tab-chat',    label: 'Go to RAG Chat',          icon: <MessageSquare className="w-4 h-4" />,    group: 'Navigate', onSelect: () => setActiveTab('chat') },
+    { id: 'tab-chat',    label: 'Go to Chat',               icon: <MessageSquare className="w-4 h-4" />,    group: 'Navigate', onSelect: () => setActiveTab('chat') },
     { id: 'tab-graph',   label: 'Go to Compare Papers',    icon: <TableProperties className="w-4 h-4" />,  group: 'Navigate', onSelect: () => setActiveTab('graph') },
     { id: 'tab-gaps',    label: 'Go to Research Gaps',     icon: <GitBranch className="w-4 h-4" />,        group: 'Navigate', onSelect: () => setActiveTab('gaps') },
     { id: 'tab-notes',   label: 'Go to Notes',             icon: <Bookmark className="w-4 h-4" />,         group: 'Navigate', onSelect: () => setActiveTab('notes') },
@@ -86,7 +86,7 @@ export default function Workspace() {
           </Button>
           
           <div className="flex items-center gap-3">
-            <img src="/dark-owl.png" alt="PaperSage" className="w-10 h-10 rounded-lg object-cover cursor-pointer" onClick={() => navigate('/dashboard')} />
+            <img src="/owl.png" alt="PaperSage" className="w-10 h-10 rounded-lg object-cover cursor-pointer" onClick={() => navigate('/dashboard')} />
             <div>
               <h1 className="text-lg font-serif font-semibold text-foreground">{project.name}</h1>
               <p className="text-sm text-muted-foreground">{project.papers?.length ?? 0} papers</p>

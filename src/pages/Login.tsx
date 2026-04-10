@@ -49,7 +49,7 @@ export default function Login() {
         <div className="glass-strong rounded-2xl p-8 glow-border">
           {/* Logo */}
           <div className="flex items-center justify-center gap-3 mb-8">
-            <img src="/dark-owl.png" alt="PaperSage" className="w-12 h-12 rounded-xl object-cover" />
+            <img src="/owl.png" alt="PaperSage" className="w-12 h-12 rounded-xl object-cover" />
             <span className="text-2xl font-serif font-semibold text-foreground">PaperSage</span>
           </div>
 
