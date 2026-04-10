@@ -89,7 +89,7 @@ export function GraphTab({ projectId }: GraphTabProps) {
       {/* Header */}
       <div className="p-4 border-b border-border flex items-center justify-between">
         <div>
-          <h2 className="font-semibold text-foreground">Paper Comparison</h2>
+          <h2 className="font-serif font-semibold text-foreground">Paper Comparison</h2>
           <p className="text-sm text-muted-foreground">
             {formattedDate ? `Last generated: ${formattedDate}` : 'Side-by-side breakdown of all ready papers'}
           </p>

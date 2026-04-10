@@ -57,14 +57,6 @@ export default {
 				border: 'hsl(var(--sidebar-border))',
 				ring: 'hsl(var(--sidebar-ring))'
 			},
-			neon: 'hsl(var(--neon))',
-			cyan: 'hsl(var(--cyan))',
-			emerald: 'hsl(var(--emerald))',
-			glass: {
-				DEFAULT: 'hsl(var(--glass))',
-				border: 'hsl(var(--glass-border))',
-				glow: 'hsl(var(--glass-glow))'
-			}
 		},
 		borderRadius: {
 			lg: 'var(--radius)',
@@ -106,7 +98,8 @@ export default {
 			'pulse-slow': 'pulse-slow 3s ease-in-out infinite'
 		},
 		fontFamily: {
-			sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif']
+			sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', '-apple-system', 'sans-serif'],
+			serif: ['Lora', 'ui-serif', 'Georgia', 'serif']
 		}
   	}
   },

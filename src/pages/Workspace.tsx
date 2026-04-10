@@ -88,7 +88,7 @@ export default function Workspace() {
           <div className="flex items-center gap-3">
             <img src="/dark-owl.png" alt="PaperSage" className="w-10 h-10 rounded-lg object-cover cursor-pointer" onClick={() => navigate('/dashboard')} />
             <div>
-              <h1 className="text-lg font-semibold text-foreground">{project.name}</h1>
+              <h1 className="text-lg font-serif font-semibold text-foreground">{project.name}</h1>
               <p className="text-sm text-muted-foreground">{project.papers?.length ?? 0} papers</p>
             </div>
           </div>
@@ -134,7 +134,7 @@ export default function Workspace() {
               className="gap-2 px-5 py-3 rounded-none bg-transparent border-0 border-b-2 border-transparent text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:text-foreground transition-colors"
             >
               <MessageSquare className="w-4 h-4" />
-              RAG Chat
+              Chat
             </TabsTrigger>
             <TabsTrigger
               value="graph"

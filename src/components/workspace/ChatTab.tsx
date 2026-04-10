@@ -346,7 +346,7 @@ export function ChatTab({ projectId, isActive, pendingQuery, onPendingQueryConsu
                   : 'hover:bg-muted/30 border-l-2 border-transparent'
               }`}
             >
-              <p className={`text-xs font-medium line-clamp-2 leading-snug pr-4 ${
+              <p className={`text-sm font-medium line-clamp-2 leading-snug pr-4 ${
                 session.id === activeId ? 'text-foreground' : 'text-muted-foreground'
               }`}>
                 {session.name}
@@ -376,7 +376,7 @@ export function ChatTab({ projectId, isActive, pendingQuery, onPendingQueryConsu
               <BookOpen className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
-              <h2 className="font-semibold text-foreground">Research Assistant</h2>
+              <h2 className="font-serif font-semibold text-foreground">Research Assistant</h2>
               <p className="text-sm text-muted-foreground">Ask questions about your papers</p>
             </div>
           </div>
@@ -435,7 +435,7 @@ export function ChatTab({ projectId, isActive, pendingQuery, onPendingQueryConsu
                           <button
                             key={i}
                             onClick={() => handleSend(q)}
-                            className="text-xs text-muted-foreground hover:text-primary border border-border/50 hover:border-primary/40 rounded-full px-3 py-1 transition-colors bg-muted/20 hover:bg-primary/5"
+                            className="text-xs text-foreground/70 hover:text-primary border border-border hover:border-primary/50 rounded-full px-3 py-1 transition-colors bg-card hover:bg-primary/5"
                           >
                             {q}
                           </button>

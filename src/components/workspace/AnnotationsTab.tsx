@@ -150,7 +150,7 @@ function AnnotationCard({
       </div>
 
       {/* Chunk */}
-      <blockquote className="border-l-2 border-primary/30 pl-3 text-xs text-muted-foreground leading-relaxed prose prose-sm prose-invert max-w-none [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_strong]:text-muted-foreground [&_p]:mb-1 last:[&_p]:mb-0">
+      <blockquote className="border-l-2 border-primary/30 pl-3 text-sm text-muted-foreground leading-relaxed prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_strong]:text-muted-foreground [&_p]:mb-1 last:[&_p]:mb-0">
         <ReactMarkdown>{annotation.chunk_text}</ReactMarkdown>
       </blockquote>
 
@@ -169,7 +169,7 @@ function AnnotationCard({
           onChange={setNote}
           onBlur={handleBlur}
           placeholder="Add a note..."
-          className="w-full resize-none bg-transparent border-b border-border/40 focus:border-primary/50 focus:outline-none pb-1 text-xs text-foreground placeholder:text-muted-foreground/40 leading-relaxed transition-colors"
+          className="w-full resize-none bg-transparent border-b border-border/40 focus:border-primary/50 focus:outline-none pb-1 text-sm text-foreground placeholder:text-muted-foreground/40 leading-relaxed transition-colors"
         />
       </div>
     </div>

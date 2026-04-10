@@ -167,7 +167,7 @@ export function PapersTab({ projectId }: PapersTabProps) {
     const base = 'w-2 h-2 rounded-full shrink-0 mt-1.5';
     switch (status) {
       case 'ready':       return <span className={`${base} bg-sky-400`} />;
-      case 'processing':  return <span className={`${base} bg-blue-400 animate-pulse`} />;
+      case 'processing':  return <span className={`${base} bg-primary/60 animate-pulse`} />;
       case 'no_pdf':      return <span className={`${base} bg-slate-500`} />;
       default:            return <span className={`${base} bg-rose-500`} />;
     }
@@ -176,7 +176,7 @@ export function PapersTab({ projectId }: PapersTabProps) {
   const statusBorderClass = (status: Paper['status']) => {
     switch (status) {
       case 'ready':      return 'border-l-2 border-sky-500/60';
-      case 'processing': return 'border-l-2 border-blue-500/60';
+      case 'processing': return 'border-l-2 border-primary/60';
       case 'no_pdf':     return 'border-l-2 border-slate-500/60';
       default:           return 'border-l-2 border-rose-500/60';
     }
@@ -196,7 +196,7 @@ export function PapersTab({ projectId }: PapersTabProps) {
       {/* Search Panel */}
       <div className="glass rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-foreground">
+          <h2 className="text-lg font-serif font-semibold text-foreground">
             {discoverMode ? 'Related Papers' : 'Search Papers'}
           </h2>
           <div className="flex items-center gap-2">

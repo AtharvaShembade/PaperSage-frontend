@@ -67,7 +67,7 @@ function SectionBlock({
       <div className="glass rounded-xl p-5">
         <div className="flex items-center gap-2 mb-1">
           <div className="w-0.5 h-5 bg-primary/60 rounded-full" />
-          <h3 className="font-semibold text-foreground">{section.title}</h3>
+          <h3 className="font-serif font-semibold text-foreground">{section.title}</h3>
           <span className="text-xs text-muted-foreground ml-auto">None found</span>
         </div>
         <p className="text-xs text-muted-foreground ml-3 mt-2">

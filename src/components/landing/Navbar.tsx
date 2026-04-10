@@ -9,7 +9,7 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <img src="/dark-owl.png" alt="PaperSage" className="w-10 h-10 rounded-lg object-cover" />
-          <span className="text-xl font-bold text-foreground">PaperSage</span>
+          <span className="text-xl font-serif font-semibold text-foreground">PaperSage</span>
         </div>
 
 
