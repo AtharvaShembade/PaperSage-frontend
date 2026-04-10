@@ -166,19 +166,19 @@ export function PapersTab({ projectId }: PapersTabProps) {
   const statusDot = (status: Paper['status']) => {
     const base = 'w-2 h-2 rounded-full shrink-0 mt-1.5';
     switch (status) {
-      case 'ready':       return <span className={`${base} bg-sky-400`} />;
+      case 'ready':       return <span className={`${base} bg-indigo-700`} />;
       case 'processing':  return <span className={`${base} bg-primary/60 animate-pulse`} />;
-      case 'no_pdf':      return <span className={`${base} bg-slate-500`} />;
-      default:            return <span className={`${base} bg-rose-500`} />;
+      case 'no_pdf':      return <span className={`${base} bg-slate-700`} />;
+      default:            return <span className={`${base} bg-rose-700`} />;
     }
   };
 
   const statusBorderClass = (status: Paper['status']) => {
     switch (status) {
-      case 'ready':      return 'border-l-2 border-sky-500/60';
+      case 'ready':      return 'border-l-2 border-indigo-700/60';
       case 'processing': return 'border-l-2 border-primary/60';
-      case 'no_pdf':     return 'border-l-2 border-slate-500/60';
-      default:           return 'border-l-2 border-rose-500/60';
+      case 'no_pdf':     return 'border-l-2 border-slate-700/60';
+      default:           return 'border-l-2 border-rose-700/60';
     }
   };
 

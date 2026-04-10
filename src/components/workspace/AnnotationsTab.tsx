@@ -150,7 +150,7 @@ function AnnotationCard({
       </div>
 
       {/* Chunk */}
-      <blockquote className="border-l-2 border-primary/30 pl-3 text-sm text-muted-foreground leading-relaxed prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_strong]:text-muted-foreground [&_p]:mb-1 last:[&_p]:mb-0">
+      <blockquote className="border-l-2 border-primary/30 pl-3 text-sm text-foreground/80 leading-relaxed prose prose-sm max-w-none [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_strong]:text-foreground/80 [&_p]:mb-1 last:[&_p]:mb-0">
         <ReactMarkdown>{annotation.chunk_text}</ReactMarkdown>
       </blockquote>
 

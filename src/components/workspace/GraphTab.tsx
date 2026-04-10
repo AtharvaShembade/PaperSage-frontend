@@ -166,7 +166,7 @@ export function GraphTab({ projectId }: GraphTabProps) {
                             {row.year && <p className="text-xs text-muted-foreground mt-0.5">{row.year}</p>}
                           </div>
                         ) : (
-                          <p className="text-muted-foreground leading-relaxed">{row[col.key] as string}</p>
+                          <p className="text-foreground/80 leading-relaxed">{row[col.key] as string}</p>
                         )}
                       </td>
                     ))}
