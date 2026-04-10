@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Paper, SearchResult } from '@/types';
 import { searchPapers, fetchProjectPapers, addPaperToProject, removePaperFromProject, fetchRelatedPapers } from '@/services/api';
+import { useToast } from '@/hooks/use-toast';
 import { Search, Plus, FileText, Loader2, Trash2, Quote, Check } from 'lucide-react';
 import {
   Dialog,
@@ -17,6 +18,7 @@ interface PapersTabProps {
 }
 
 export function PapersTab({ projectId }: PapersTabProps) {
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -106,8 +108,8 @@ export function PapersTab({ projectId }: PapersTabProps) {
     try {
       const results = await searchPapers(searchQuery);
       setSearchResults(results);
-    } catch (error) {
-      console.error('Search failed:', error);
+    } catch {
+      toast({ title: 'Search failed', description: 'Could not search papers. Try again.', variant: 'destructive' });
     } finally {
       setIsSearching(false);
     }
@@ -120,8 +122,8 @@ export function PapersTab({ projectId }: PapersTabProps) {
     try {
       const results = await fetchRelatedPapers(projectId);
       setSearchResults(results);
-    } catch (error) {
-      console.error('Discovery failed:', error);
+    } catch {
+      toast({ title: 'Discovery failed', description: 'Could not find related papers. Try again.', variant: 'destructive' });
       setDiscoverMode(false);
     } finally {
       setIsDiscovering(false);
@@ -143,8 +145,8 @@ export function PapersTab({ projectId }: PapersTabProps) {
 
       await loadPapers();
       setSearchResults(prev => prev.filter(r => r.id !== result.id));
-    } catch (error) {
-      console.error('Failed to add paper:', error);
+    } catch {
+      toast({ title: 'Failed to add paper', description: 'Could not add the paper. Try again.', variant: 'destructive' });
     } finally {
       setAddingPapers(prev => {
         const newSet = new Set(prev);
@@ -159,8 +161,8 @@ export function PapersTab({ projectId }: PapersTabProps) {
     try {
       await removePaperFromProject(projectId, paperId);
       setPapers(prev => prev.filter(p => String(p.id) !== paperId));
-    } catch (error) {
-      console.error('Failed to remove paper:', error);
+    } catch {
+      toast({ title: 'Failed to remove paper', description: 'Could not remove the paper. Try again.', variant: 'destructive' });
     } finally {
       setRemovingPapers(prev => { const s = new Set(prev); s.delete(paperId); return s; });
     }

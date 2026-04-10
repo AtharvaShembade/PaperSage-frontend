@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 import { fetchProjects, createProject, deleteProject } from '@/services/api';
 import { Project } from '@/types';
 import { CommandPalette, PaletteCommand } from '@/components/CommandPalette';
@@ -33,6 +34,7 @@ export default function Dashboard() {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     loadProjects();
@@ -43,9 +45,8 @@ export default function Dashboard() {
     try {
       const data = await fetchProjects();
       setProjects(data);
-    } catch (error) {
-      console.error('Failed to load projects:', error);
-      // Handle error - show empty state
+    } catch {
+      toast({ title: 'Failed to load projects', description: 'Check your connection and try again.', variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
@@ -59,8 +60,8 @@ export default function Dashboard() {
       setProjects(prev => [newProject, ...prev]);
       setNewProjectName('');
       setIsDialogOpen(false);
-    } catch (error) {
-      console.error('Failed to create project:', error);
+    } catch {
+      toast({ title: 'Failed to create project', description: 'Please try again.', variant: 'destructive' });
     } finally {
       setIsCreating(false);
     }
@@ -73,8 +74,8 @@ export default function Dashboard() {
       await deleteProject(String(projectToDelete.id));
       setProjects(prev => prev.filter(p => p.id !== projectToDelete.id));
       setProjectToDelete(null);
-    } catch (error) {
-      console.error('Failed to delete project:', error);
+    } catch {
+      toast({ title: 'Failed to delete project', description: 'Please try again.', variant: 'destructive' });
     } finally {
       setIsDeleting(false);
     }

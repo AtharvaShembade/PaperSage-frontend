@@ -3,53 +3,55 @@ import { supabase } from '@/lib/supabase';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api/v1';
 
+export class ApiError extends Error {
+  constructor(public status: number, message: string) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
 // Helper to get auth token from Supabase
 const getAuthHeaders = async () => {
   const { data: { session } } = await supabase.auth.getSession();
   const token = session?.access_token;
-  
+
   return {
     'Content-Type': 'application/json',
     'Authorization': token ? `Bearer ${token}` : '',
   };
 };
 
+async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const headers = await getAuthHeaders();
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...options,
+    headers: { ...headers, ...options.headers },
+  });
+  if (!response.ok) {
+    throw new ApiError(response.status, await response.text().catch(() => response.statusText));
+  }
+  if (response.status === 204) return undefined as T;
+  return response.json();
+}
+
 // Fetch all projects
 export async function fetchProjects(): Promise<Project[]> {
-  const response = await fetch(`${API_BASE_URL}/projects/`, {
-    headers: await getAuthHeaders(),
-  });
-  if (!response.ok) throw new Error('Failed to fetch projects');
-  return response.json();
+  return apiFetch('/projects/');
 }
 
 // Create a project
 export async function createProject(name: string): Promise<Project> {
-  const response = await fetch(`${API_BASE_URL}/projects/`, {
-    method: 'POST',
-    headers: await getAuthHeaders(),
-    body: JSON.stringify({ name }),
-  });
-  if (!response.ok) throw new Error('Failed to create project');
-  return response.json();
+  return apiFetch('/projects/', { method: 'POST', body: JSON.stringify({ name }) });
 }
 
 // Delete a project
 export async function deleteProject(id: string): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/projects/${id}`, {
-    method: 'DELETE',
-    headers: await getAuthHeaders(),
-  });
-  if (!response.ok) throw new Error('Failed to delete project');
+  return apiFetch(`/projects/${id}`, { method: 'DELETE' });
 }
 
 // Get project details
 export async function fetchProject(id: string): Promise<Project> {
-  const response = await fetch(`${API_BASE_URL}/projects/${id}`, {
-    headers: await getAuthHeaders(),
-  });
-  if (!response.ok) throw new Error('Failed to fetch project');
-  return response.json();
+  return apiFetch(`/projects/${id}`);
 }
 
 // Add paper to project
@@ -57,12 +59,7 @@ export async function addPaperToProject(
   projectId: string,
   paper: { external_id: string; title: string; abstract?: string; year?: number; pdf_url?: string; arxiv_id?: string }
 ): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/papers/projects/${projectId}/add-paper`, {
-    method: 'POST',
-    headers: await getAuthHeaders(),
-    body: JSON.stringify(paper),
-  });
-  if (!response.ok) throw new Error('Failed to add paper');
+  return apiFetch(`/papers/projects/${projectId}/add-paper`, { method: 'POST', body: JSON.stringify(paper) });
 }
 
 // Chat with RAG — streaming. Returns raw Response for caller to read as a stream.
@@ -78,14 +75,10 @@ export async function streamChatMessage(projectId: string, message: string, deep
 
 // Chat with RAG (non-streaming fallback)
 export async function sendChatMessage(projectId: string, message: string, deep = false): Promise<ChatMessage> {
-  const response = await fetch(`${API_BASE_URL}/rag/chat`, {
+  const data = await apiFetch<{ answer: string; sources: ChatSource[]; follow_ups: string[] }>('/rag/chat', {
     method: 'POST',
-    headers: await getAuthHeaders(),
     body: JSON.stringify({ project_id: parseInt(projectId), query: message, deep }),
   });
-  if (!response.ok) throw Object.assign(new Error('Failed to send message'), { status: response.status });
-  const data = await response.json();
-  
   return {
     id: Date.now().toString(),
     role: 'assistant',
@@ -98,165 +91,104 @@ export async function sendChatMessage(projectId: string, message: string, deep =
 
 // Discover related papers for a project
 export async function fetchRelatedPapers(projectId: string): Promise<SearchResult[]> {
-  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/discover`, {
-    headers: await getAuthHeaders(),
-  });
-  if (!response.ok) throw new Error('Failed to fetch related papers');
-  return response.json();
+  return apiFetch(`/projects/${projectId}/discover`);
 }
 
 // Search papers (Semantic Scholar)
 export async function searchPapers(query: string): Promise<SearchResult[]> {
-  const response = await fetch(`${API_BASE_URL}/search/?q=${encodeURIComponent(query)}&limit=20`, {
-    headers: await getAuthHeaders(),
-  });
-  if (!response.ok) throw new Error('Failed to search papers');
-  return response.json();
+  return apiFetch(`/search/?q=${encodeURIComponent(query)}&limit=20`);
 }
 
 // Fetch papers in a project
 export async function fetchProjectPapers(projectId: string): Promise<Paper[]> {
-  const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
-    headers: await getAuthHeaders(),
-  });
-  if (!response.ok) throw new Error('Failed to fetch project papers');
-  const project = await response.json();
+  const project = await apiFetch<{ papers?: Paper[] }>(`/projects/${projectId}`);
   return project.papers || [];
 }
 
 // Fetch citation graph for a project
 export async function fetchCitationGraph(projectId: string): Promise<{ nodes: CitationNode[]; edges: CitationEdge[] }> {
-  const response = await fetch(`${API_BASE_URL}/analysis/projects/${projectId}/analysis`, {
-    headers: await getAuthHeaders(),
-  });
-  if (!response.ok) throw new Error('Failed to fetch citation graph');
-  return response.json();
+  return apiFetch(`/analysis/projects/${projectId}/analysis`);
 }
 
 // Fetch comparison table for a project
 export async function fetchComparisonTable(projectId: string): Promise<ComparisonResponse> {
-  const response = await fetch(`${API_BASE_URL}/analysis/projects/${projectId}/comparison`, {
-    headers: await getAuthHeaders(),
-  });
-  if (!response.ok) throw new Error('Failed to fetch comparison table');
-  return response.json();
+  return apiFetch(`/analysis/projects/${projectId}/comparison`);
 }
 
 // Annotations
 export async function fetchAnnotations(projectId: string): Promise<Annotation[]> {
-  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/annotations`, {
-    headers: await getAuthHeaders(),
-  });
-  if (!response.ok) throw new Error('Failed to fetch annotations');
-  return response.json();
+  return apiFetch(`/projects/${projectId}/annotations`);
 }
 
 export async function pinAnnotation(projectId: string, paperTitle: string, chunkText: string): Promise<Annotation> {
-  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/annotations`, {
+  return apiFetch(`/projects/${projectId}/annotations`, {
     method: 'POST',
-    headers: await getAuthHeaders(),
     body: JSON.stringify({ paper_title: paperTitle, chunk_text: chunkText }),
   });
-  if (!response.ok) throw new Error('Failed to pin annotation');
-  return response.json();
 }
 
 export async function updateAnnotation(annotationId: number, userNote: string): Promise<Annotation> {
-  const response = await fetch(`${API_BASE_URL}/annotations/${annotationId}`, {
+  return apiFetch(`/annotations/${annotationId}`, {
     method: 'PATCH',
-    headers: await getAuthHeaders(),
     body: JSON.stringify({ user_note: userNote }),
   });
-  if (!response.ok) throw new Error('Failed to update annotation');
-  return response.json();
 }
 
 export async function deleteAnnotation(annotationId: number): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/annotations/${annotationId}`, {
-    method: 'DELETE',
-    headers: await getAuthHeaders(),
-  });
-  if (!response.ok) throw new Error('Failed to delete annotation');
+  return apiFetch(`/annotations/${annotationId}`, { method: 'DELETE' });
 }
 
 // Literature Review
 export async function litReviewSearch(projectId: string, question: string): Promise<{ paper_ids: number[]; message: string }> {
-  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/lit-review/search`, {
+  return apiFetch(`/projects/${projectId}/lit-review/search`, {
     method: 'POST',
-    headers: await getAuthHeaders(),
     body: JSON.stringify({ question }),
   });
-  if (!response.ok) throw new Error('Failed to search papers for review');
-  return response.json();
 }
 
 export async function litReviewGenerate(projectId: string, question: string): Promise<{ review: string }> {
-  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/lit-review/generate`, {
+  return apiFetch(`/projects/${projectId}/lit-review/generate`, {
     method: 'POST',
-    headers: await getAuthHeaders(),
     body: JSON.stringify({ question }),
   });
-  if (!response.ok) throw new Error('Failed to generate literature review');
-  return response.json();
 }
 
 // Chat sessions
 export async function fetchChatSessions(projectId: string): Promise<ChatSession[]> {
-  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/chat-sessions`, {
-    headers: await getAuthHeaders(),
-  });
-  if (!response.ok) throw new Error('Failed to fetch chat sessions');
-  return response.json();
+  return apiFetch(`/projects/${projectId}/chat-sessions`);
 }
 
 export async function createChatSession(projectId: string, name = 'New Chat'): Promise<ChatSession> {
-  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/chat-sessions`, {
+  return apiFetch(`/projects/${projectId}/chat-sessions`, {
     method: 'POST',
-    headers: { ...await getAuthHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify({ name }),
   });
-  if (!response.ok) throw new Error('Failed to create chat session');
-  return response.json();
 }
 
 export async function updateChatSession(
   sessionId: number,
   data: { name?: string; messages?: object[] }
 ): Promise<ChatSession> {
-  const response = await fetch(`${API_BASE_URL}/chat-sessions/${sessionId}`, {
+  return apiFetch(`/chat-sessions/${sessionId}`, {
     method: 'PATCH',
-    headers: { ...await getAuthHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  if (!response.ok) throw new Error('Failed to update chat session');
-  return response.json();
 }
 
 export async function deleteChatSession(sessionId: number): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/chat-sessions/${sessionId}`, {
-    method: 'DELETE',
-    headers: await getAuthHeaders(),
-  });
-  if (!response.ok) throw new Error('Failed to delete chat session');
+  return apiFetch(`/chat-sessions/${sessionId}`, { method: 'DELETE' });
 }
 
 // Gap analysis
 export async function runGapAnalysis(projectId: string, focus?: string): Promise<GapAnalysis> {
-  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/gap-analysis`, {
+  return apiFetch(`/projects/${projectId}/gap-analysis`, {
     method: 'POST',
-    headers: { ...await getAuthHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify({ focus: focus || null }),
   });
-  if (!response.ok) throw new Error('Failed to run gap analysis');
-  return response.json();
 }
 
 // Remove paper from project
 export async function removePaperFromProject(projectId: string, paperId: string): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/papers/projects/${projectId}/papers/${paperId}`, {
-    method: 'DELETE',
-    headers: await getAuthHeaders(),
-  });
-  if (!response.ok) throw new Error('Failed to remove paper');
+  return apiFetch(`/papers/projects/${projectId}/papers/${paperId}`, { method: 'DELETE' });
 }
 
