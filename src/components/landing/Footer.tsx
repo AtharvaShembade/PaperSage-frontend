@@ -6,7 +6,7 @@ export function Footer() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2">
             <img src="/dark-owl.png" alt="PaperSage" className="w-8 h-8 rounded-lg object-cover" />
-            <span className="text-lg font-semibold text-foreground">PaperSage</span>
+            <span className="text-lg font-serif font-semibold text-foreground">PaperSage</span>
           </div>
           
           <div className="flex items-center gap-6 text-sm text-muted-foreground">

@@ -38,8 +38,8 @@ export function Features() {
     <section id="features" className="py-24 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            <span className="text-foreground">Powerful Features</span>
+          <h2 className="text-4xl md:text-5xl font-serif font-semibold mb-4 text-foreground">
+            Powerful Features
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Everything a researcher needs, without reading every page
@@ -56,7 +56,7 @@ export function Features() {
               <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 transition-transform">
                 <feature.icon className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="text-xl font-semibold mb-2 text-foreground">{feature.title}</h3>
+              <h3 className="text-xl font-serif font-semibold mb-2 text-foreground">{feature.title}</h3>
               <p className="text-muted-foreground">{feature.description}</p>
             </div>
           ))}
