@@ -168,33 +168,19 @@ export function PapersTab({ projectId }: PapersTabProps) {
     }
   };
 
+  const STATUS_CONFIG: Record<string, { dot: string; border: string; label: string; pulse?: boolean }> = {
+    ready:      { dot: 'bg-indigo-700',   border: 'border-l-2 border-indigo-700/60', label: 'ready' },
+    processing: { dot: 'bg-primary/60',   border: 'border-l-2 border-primary/60',    label: 'processing…', pulse: true },
+    no_pdf:     { dot: 'bg-slate-700',    border: 'border-l-2 border-slate-700/60',  label: 'no pdf' },
+  };
+  const getStatus = (status: Paper['status']) => STATUS_CONFIG[status] ?? { dot: 'bg-rose-700', border: 'border-l-2 border-rose-700/60', label: 'error' };
+
   const statusDot = (status: Paper['status']) => {
-    const base = 'w-2 h-2 rounded-full shrink-0 mt-1.5';
-    switch (status) {
-      case 'ready':       return <span className={`${base} bg-indigo-700`} />;
-      case 'processing':  return <span className={`${base} bg-primary/60 animate-pulse`} />;
-      case 'no_pdf':      return <span className={`${base} bg-slate-700`} />;
-      default:            return <span className={`${base} bg-rose-700`} />;
-    }
+    const s = getStatus(status);
+    return <span className={`w-2 h-2 rounded-full shrink-0 mt-1.5 ${s.dot}${s.pulse ? ' animate-pulse' : ''}`} />;
   };
-
-  const statusBorderClass = (status: Paper['status']) => {
-    switch (status) {
-      case 'ready':      return 'border-l-2 border-indigo-700/60';
-      case 'processing': return 'border-l-2 border-primary/60';
-      case 'no_pdf':     return 'border-l-2 border-slate-700/60';
-      default:           return 'border-l-2 border-rose-700/60';
-    }
-  };
-
-  const statusLabel = (status: Paper['status']) => {
-    switch (status) {
-      case 'ready':      return 'ready';
-      case 'processing': return 'processing…';
-      case 'no_pdf':     return 'no pdf';
-      default:           return 'error';
-    }
-  };
+  const statusBorderClass = (status: Paper['status']) => getStatus(status).border;
+  const statusLabel = (status: Paper['status']) => getStatus(status).label;
 
   return (
     <div className="grid lg:grid-cols-2 gap-6">
