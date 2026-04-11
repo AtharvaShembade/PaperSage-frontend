@@ -252,7 +252,7 @@ export function PapersTab({ projectId }: PapersTabProps) {
                   <p className="text-sm text-muted-foreground line-clamp-2">{result.abstract}</p>
                   <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
                     {result.citations != null && <span>{result.citations.toLocaleString()} citations</span>}
-                    <span className="px-2 py-0.5 bg-sky-500/20 text-sky-400 rounded-full">PDF Available</span>
+                    <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-full">PDF Available</span>
                   </div>
                 </div>
                 <Button 
@@ -399,14 +399,14 @@ export function PapersTab({ projectId }: PapersTabProps) {
                 className="w-full flex items-center justify-between text-sm px-2 py-1.5 rounded hover:bg-muted/50 transition-colors text-foreground"
               >
                 <span>APA</span>
-                {copiedFormat === `apa-${paper.id}` ? <Check className="w-3.5 h-3.5 text-sky-400" /> : <span className="text-xs text-muted-foreground">Copy</span>}
+                {copiedFormat === `apa-${paper.id}` ? <Check className="w-3.5 h-3.5 text-primary" /> : <span className="text-xs text-muted-foreground">Copy</span>}
               </button>
               <button
                 onClick={() => handleCopy(buildBibTeX(paper), `bib-${paper.id}`)}
                 className="w-full flex items-center justify-between text-sm px-2 py-1.5 rounded hover:bg-muted/50 transition-colors text-foreground"
               >
                 <span>BibTeX</span>
-                {copiedFormat === `bib-${paper.id}` ? <Check className="w-3.5 h-3.5 text-sky-400" /> : <span className="text-xs text-muted-foreground">Copy</span>}
+                {copiedFormat === `bib-${paper.id}` ? <Check className="w-3.5 h-3.5 text-primary" /> : <span className="text-xs text-muted-foreground">Copy</span>}
               </button>
             </div>
           </div>,
